@@ -11,8 +11,9 @@
  */
 
 import {
-  COMPANY,
+  DIFFICULTIES,
   SAVE_VERSION,
+  type Difficulty,
   type Positioning,
   type StaffRole,
   type TrafficTier,
@@ -165,6 +166,16 @@ export interface LogEntry {
   message: string;
 }
 
+/** A weekly snapshot for the stats/history charts. */
+export interface HistoryPoint {
+  week: number;
+  netWorth: number;
+  cash: number;
+  reputation: number;
+  units: number;
+  avgMargin: number;
+}
+
 /** An active complication with a deadline the player must resolve. */
 export interface Complication {
   id: string;
@@ -184,6 +195,7 @@ export interface ActiveDisaster {
 export interface GameState {
   version: number;
   seed: number;
+  difficulty: Difficulty;
   rngState: RngState;
   week: number;
   cash: number;
@@ -200,6 +212,11 @@ export interface GameState {
 
   executives: ExecutivesState;
   ownRealEstatePolicy: boolean;
+
+  /** Outstanding loan principal (accrues weekly interest). */
+  debt: number;
+  /** Fraction of the company sold to investors/PE (dividend on positive net). */
+  investorEquity: number;
 
   /** Acquisition market: purchasable mega-chains and small competitor chains. */
   bigGroups: GroupOffer[];
@@ -219,6 +236,8 @@ export interface GameState {
   /** Completed goal ids. */
   goals: string[];
   log: LogEntry[];
+  /** Weekly snapshots for the stats/history panel. */
+  history: HistoryPoint[];
 
   /** Monotonic id counter so generated ids stay deterministic. */
   nextId: number;
@@ -227,6 +246,17 @@ export interface GameState {
 export interface NewGameOptions {
   seed?: number;
   companyName?: string;
+  difficulty?: Difficulty;
+}
+
+/** Hash an arbitrary seed string into a 32-bit integer (for shareable seeds). */
+export function hashSeed(input: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
 }
 
 /**
@@ -235,15 +265,18 @@ export interface NewGameOptions {
  */
 export function newGame(opts: NewGameOptions = {}): GameState {
   const seed = (opts.seed ?? 0x5e1ec7ed) >>> 0;
+  const difficulty: Difficulty = opts.difficulty ?? "normal";
+  const diff = DIFFICULTIES[difficulty];
   const rng = new Rng(seed);
 
   const state: GameState = {
     version: SAVE_VERSION,
     seed,
+    difficulty,
     rngState: rng.toState(),
     week: 1,
-    cash: COMPANY.startingCash,
-    reputation: COMPANY.startingReputation,
+    cash: diff.startingCash,
+    reputation: 50,
     companyName: opts.companyName ?? "Shore Thing Holdings",
 
     brands: [],
@@ -271,6 +304,8 @@ export function newGame(opts: NewGameOptions = {}): GameState {
       founderRole: "ceo",
     },
     ownRealEstatePolicy: false,
+    debt: 0,
+    investorEquity: 0,
 
     bigGroups: [],
     competitorChains: [],
@@ -298,6 +333,7 @@ export function newGame(opts: NewGameOptions = {}): GameState {
     achievements: [],
     goals: [],
     log: [],
+    history: [],
 
     nextId: 1,
   };

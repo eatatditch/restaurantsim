@@ -13,6 +13,7 @@
 import {
   CITY_MARKETS,
   COMPANY,
+  DIFFICULTIES,
   EXPANSION,
   FACILITIES,
   PRICE_TIERS,
@@ -32,7 +33,8 @@ import {
   processLeaseExpiries,
 } from "./realestate";
 import { tickAcquisitions } from "./acquisitions";
-import { happinessMult, tickPersonal } from "./life";
+import { applyFinancing } from "./finance";
+import { happinessMult, personalNetWorth, tickPersonal } from "./life";
 import { seasonForWeek, tickEvents } from "./events";
 import { findBrand } from "./brands";
 import {
@@ -60,7 +62,7 @@ export function advanceWeek(input: GameState): GameState {
   for (const loc of state.locations) {
     if (loc.status !== "open") continue;
     const city = CITY_MARKETS.find((c) => c.id === loc.cityId);
-    const growth = city?.growth ?? 1;
+    const growth = (city?.growth ?? 1) * DIFFICULTIES[state.difficulty].rampMult;
     loc.maturity = rampMaturity(loc, state.reputation, growth);
   }
 
@@ -91,12 +93,16 @@ export function advanceWeek(input: GameState): GameState {
   const openUnits = state.locations.filter((l) => l.status === "open").length;
   const overhead =
     (COMPANY.weeklyOverheadBase + COMPANY.weeklyOverheadPerUnit * openUnits) *
-    companyOverheadMult(state);
+    companyOverheadMult(state) *
+    DIFFICULTIES[state.difficulty].overheadMult;
   weeklyNet -= overhead;
   weeklyNet -= execSalaries(state);
   if (state.executives.facilities) {
     weeklyNet -= FACILITIES.weeklySalary;
   }
+
+  // Financing: loan interest (cost) + investor dividend on positive net.
+  weeklyNet = applyFinancing(state, weeklyNet);
 
   state.cash += weeklyNet;
 
@@ -133,7 +139,25 @@ export function advanceWeek(input: GameState): GameState {
   if (weeklyNet !== 0) {
     log(state, "pl", `Week ${state.week - 1}: net ${fmt(weeklyNet)} · cash ${fmt(state.cash)}`);
   }
+
+  recordHistory(state);
   return state;
+}
+
+/** Append a weekly snapshot for the stats/history charts (bounded). */
+function recordHistory(state: GameState): void {
+  const open = state.locations.filter((l) => l.status === "open");
+  const margins = open.map((l) => (l.lastRevenue > 0 ? l.lastNet / l.lastRevenue : 0));
+  const avgMargin = margins.length ? margins.reduce((a, b) => a + b, 0) / margins.length : 0;
+  state.history.push({
+    week: state.week,
+    netWorth: Math.round(state.cash + personalNetWorth(state)),
+    cash: Math.round(state.cash),
+    reputation: Math.round(state.reputation * 10) / 10,
+    units: open.length,
+    avgMargin: Math.round(avgMargin * 10000) / 10000,
+  });
+  if (state.history.length > 1040) state.history.splice(0, state.history.length - 1040);
 }
 
 /** Company-wide P&L modifiers assembled from current state (mostly neutral). */
@@ -143,6 +167,8 @@ function modifiersFor(state: GameState): PLModifiers {
   mods.execRevenueMult = companyRevenueMult(state);
   // The owner's happiness feeds restaurant customer counts (life<->business).
   mods.happinessMult = happinessMult(state);
+  // Difficulty global demand multiplier (normal = 1).
+  mods.brandMult *= DIFFICULTIES[state.difficulty].demandMult;
   // Seasonality and any active disasters.
   mods.seasonMult = seasonForWeek(state.week).revMult;
   for (const d of state.activeDisasters) mods.disasterMult *= d.revMult;

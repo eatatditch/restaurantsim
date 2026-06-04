@@ -8,9 +8,11 @@
  */
 
 import { createSupabaseClient, SupabaseSaveAdapter } from "../save/supabase";
+import { LeaderboardClient, type LeaderboardEntry } from "../save/leaderboard";
 import { LocalStorageAdapter } from "../save/storage";
 import { ActionError } from "../sim/actions";
 import { advanceWeek } from "../sim/advanceWeek";
+import { personalNetWorth } from "../sim/life";
 import { newGame, type GameState } from "../sim/state";
 import { sfx } from "./sound";
 
@@ -110,10 +112,35 @@ export class GameStore {
     this.notify();
   }
 
-  startNewGame(companyName: string, seed?: number): void {
-    this.state = newGame({ companyName, seed });
+  startNewGame(companyName: string, opts: { seed?: number; difficulty?: GameState["difficulty"] } = {}): void {
+    this.state = newGame({ companyName, seed: opts.seed, difficulty: opts.difficulty });
     this.persist();
     this.notify();
+  }
+
+  // --- Leaderboard ---
+
+  private leaderboard = this.supabase ? new LeaderboardClient(this.supabase) : null;
+  get leaderboardEnabled(): boolean {
+    return this.leaderboard !== null;
+  }
+
+  async topScores(limit = 20): Promise<LeaderboardEntry[]> {
+    if (!this.leaderboard) return [];
+    return this.leaderboard.top(limit).catch(() => []);
+  }
+
+  async submitScore(name: string): Promise<void> {
+    if (!this.leaderboard) throw new Error("Leaderboard not configured");
+    const netWorth = this.state.cash + personalNetWorth(this.state);
+    await this.leaderboard.submit({
+      name,
+      net_worth: netWorth,
+      brands: this.state.brands.length,
+      week: this.state.week,
+      difficulty: this.state.difficulty,
+    });
+    this.flash({ kind: "success", message: "Score submitted to the leaderboard!" });
   }
 
   flash(toast: Toast): void {

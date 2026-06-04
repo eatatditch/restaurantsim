@@ -5,8 +5,10 @@
 
 import "./ui/styles.css";
 import { startApp } from "./ui/app";
+import { loadBalanceOverrides } from "./data/overrides";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 if (root) {
-  void startApp(root);
+  // Apply optional external balance overrides BEFORE any game runs, then boot.
+  void loadBalanceOverrides().finally(() => startApp(root));
 }

@@ -5,9 +5,11 @@
 
 import {
   ACHIEVEMENTS,
+  CAPITAL_ROUNDS,
   CARS,
   CITY_MARKETS,
   CSUITE_MEETINGS,
+  DIFFICULTIES,
   EXECUTIVES,
   GOALS,
   HOMES,
@@ -16,6 +18,8 @@ import {
   NR_VERTICALS,
   PRICE_TIERS,
   RESTAURANT_CONCEPTS,
+  type CapitalRound,
+  type Difficulty,
   type ExecRole,
   type Positioning,
   type TrafficTier,
@@ -24,15 +28,17 @@ import {
 import * as A from "../sim/actions";
 import { findBrand } from "../sim/brands";
 import { goalProgress, seasonForWeek } from "../sim/events";
+import { borrowingCapacity } from "../sim/finance";
 import { lifestyleHappinessTarget, personalNetWorth } from "../sim/life";
 import { managementCapacity } from "../sim/expansion";
-import type { Brand, GameState, Location } from "../sim/state";
+import { hashSeed, type Brand, type GameState, type HistoryPoint, type Location } from "../sim/state";
+import type { LeaderboardEntry } from "../save/leaderboard";
 import { h, render } from "./dom";
 import { money, moneyFull, pct, titleCase } from "./format";
 import { isMuted, toggleMute } from "./sound";
 import { GameStore } from "./store";
 
-type ViewId = "dashboard" | "portfolio" | "acquisitions" | "executives" | "realestate" | "life" | "settings";
+type ViewId = "dashboard" | "portfolio" | "acquisitions" | "executives" | "realestate" | "finance" | "life" | "stats" | "settings";
 
 let store: GameStore;
 let view: ViewId = "dashboard";
@@ -101,7 +107,9 @@ function nav(): HTMLElement {
     ["acquisitions", "Acquisitions"],
     ["executives", "Executives"],
     ["realestate", "Real Estate"],
+    ["finance", "Finance"],
     ["life", "Life"],
+    ["stats", "Stats"],
     ["settings", "Settings"],
   ];
   return h(
@@ -131,7 +139,9 @@ function viewEl(s: GameState): HTMLElement {
     case "acquisitions": return acquisitionsView(s);
     case "executives": return executivesView(s);
     case "realestate": return realestateView(s);
+    case "finance": return financeView(s);
     case "life": return lifeView(s);
+    case "stats": return statsView(s);
     case "settings": return settingsView(s);
   }
 }
@@ -746,6 +756,153 @@ function temptationsCard(s: GameState): HTMLElement {
 }
 
 // ---------------------------------------------------------------------------
+// Finance (loans, investors, private equity)
+// ---------------------------------------------------------------------------
+
+function financeView(s: GameState): HTMLElement {
+  const capacity = borrowingCapacity(s);
+  return h("div", { class: "view" },
+    h("div", { class: "section-title" }, "Finance"),
+    h("div", { class: "grid" },
+      h("div", { class: "card" },
+        h("h3", {}, "Debt"),
+        statline("Outstanding", moneyFull(s.debt)),
+        statline("Borrowing capacity", money(capacity)),
+        statline("Interest", "8.0% / yr"),
+        h("div", { class: "btn-row" },
+          h("button", { class: "btn warn", onClick: () => amountModal("Take a Loan", (n) => A.actTakeLoan(s, n)) }, "Borrow"),
+          h("button", { class: "btn ghost", onClick: () => amountModal("Repay Debt", (n) => A.actRepayLoan(s, n)) }, "Repay"),
+        ),
+      ),
+      h("div", { class: "card" },
+        h("h3", {}, "Equity & Investors"),
+        statline("Equity sold", pct(s.investorEquity)),
+        statline("You own", pct(1 - s.investorEquity)),
+        h("div", { class: "sub" }, "Investors take a dividend share of positive weekly net."),
+        h("div", { class: "btn-row" },
+          ...(Object.keys(CAPITAL_ROUNDS) as CapitalRound[]).map((r) =>
+            h("button", { class: "btn", onClick: () => raiseModal(r) }, CAPITAL_ROUNDS[r].name)),
+        ),
+        s.investorEquity > 0 ? h("div", { class: "btn-row" }, h("button", { class: "btn ghost", onClick: () => buybackModal() }, "Buy Back Equity")) : null,
+      ),
+    ),
+  );
+}
+
+function raiseModal(round: CapitalRound): void {
+  const def = CAPITAL_ROUNDS[round];
+  let amt = def.minRaise;
+  const body = h("div", {},
+    h("div", { class: "sub" }, `${def.name}: min ${money(def.minRaise)}. You sell ~${(def.equityPerDollar * 1_000_000 * 100).toFixed(1)}% equity per $1M raised.`),
+    field("Amount ($)", h("input", { type: "number", value: def.minRaise, min: def.minRaise, onInput: (e) => { amt = parseFloat((e.target as HTMLInputElement).value || "0"); } })),
+  );
+  openModal(def.name, body, [
+    h("button", { class: "btn ghost", onClick: closeModal }, "Cancel"),
+    h("button", { class: "btn warn", onClick: () => { if (store.dispatch((st) => A.actRaiseCapital(st, round, amt), { sound: "cash" })) closeModal(); } }, "Raise"),
+  ]);
+}
+
+function buybackModal(): void {
+  let frac = Math.min(0.05, store.state.investorEquity);
+  const body = h("div", {},
+    h("div", { class: "sub" }, "Buy back equity at a premium to the cash-in valuation."),
+    field("Fraction to buy back (e.g. 0.05 = 5%)", h("input", { type: "number", value: frac, min: 0, max: store.state.investorEquity, step: 0.01, onInput: (e) => { frac = parseFloat((e.target as HTMLInputElement).value || "0"); } })),
+  );
+  openModal("Buy Back Equity", body, [
+    h("button", { class: "btn ghost", onClick: closeModal }, "Cancel"),
+    h("button", { class: "btn warn", onClick: () => { if (store.dispatch((st) => A.actBuyBackEquity(st, frac), { sound: "cash" })) closeModal(); } }, "Buy Back"),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Stats: history charts + leaderboard
+// ---------------------------------------------------------------------------
+
+function statsView(s: GameState): HTMLElement {
+  const hist = s.history;
+  return h("div", { class: "view" },
+    h("div", { class: "section-title" }, "Stats & History"),
+    hist.length < 2
+      ? h("div", { class: "empty" }, "Play a few weeks to chart your history.")
+      : h("div", { class: "grid" },
+          chartCard("Net Worth", hist, (p) => p.netWorth, "#cd6028", money),
+          chartCard("Cash", hist, (p) => p.cash, "#6bbf73", money),
+          chartCard("Reputation", hist, (p) => p.reputation, "#e8856b", (n) => n.toFixed(0)),
+          chartCard("Open Units", hist, (p) => p.units, "#547352", (n) => n.toFixed(0)),
+          chartCard("Avg Margin", hist, (p) => p.avgMargin, "#9ab8d8", (n) => pct(n)),
+        ),
+    leaderboardCard(s),
+  );
+}
+
+function chartCard(title: string, hist: HistoryPoint[], pick: (p: HistoryPoint) => number, color: string, fmt: (n: number) => string): HTMLElement {
+  const values = hist.map(pick);
+  const latest = values[values.length - 1];
+  return h("div", { class: "card" },
+    h("div", { class: "row" }, h("h3", {}, title), h("span", { class: "mono", style: "font-size:13px" }, fmt(latest))),
+    sparkline(values, color),
+  );
+}
+
+function sparkline(values: number[], color: string): HTMLElement {
+  const w = 240, hgt = 70, pad = 4;
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const n = values.length;
+  const x = (i: number) => pad + (i / (n - 1)) * (w - 2 * pad);
+  const y = (v: number) => hgt - pad - ((v - min) / range) * (hgt - 2 * pad);
+  const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const area = `${pad},${hgt - pad} ${pts} ${(w - pad).toFixed(1)},${hgt - pad}`;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${hgt}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("style", "display:block;margin-top:8px");
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", area);
+  poly.setAttribute("fill", color);
+  poly.setAttribute("opacity", "0.15");
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  line.setAttribute("points", pts);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", color);
+  line.setAttribute("stroke-width", "2");
+  line.setAttribute("stroke-linejoin", "round");
+  svg.appendChild(poly);
+  svg.appendChild(line);
+  return svg as unknown as HTMLElement;
+}
+
+function leaderboardCard(s: GameState): HTMLElement {
+  const card = h("div", { class: "card", style: "margin-top:14px" },
+    h("div", { class: "row" },
+      h("h3", {}, "Global Leaderboard"),
+      store.leaderboardEnabled
+        ? h("button", { class: "btn warn", onClick: () => textModal("Submit Score", "Display name", (name) => { store.submitScore(name).then(() => refreshLeaderboard(card)).catch((e) => store.flash({ kind: "error", message: e.message })); return s; }) }, "Submit Score")
+        : null,
+    ),
+    h("div", { class: "sub" }, store.leaderboardEnabled ? "Top empires by net worth." : "Leaderboard not configured."),
+    h("div", { class: "lb-body" }, h("div", { class: "empty" }, "Loading…")),
+  );
+  if (store.leaderboardEnabled) refreshLeaderboard(card);
+  return card;
+}
+
+function refreshLeaderboard(card: HTMLElement): void {
+  const body = card.querySelector(".lb-body") as HTMLElement | null;
+  if (!body) return;
+  void store.topScores(20).then((scores) => {
+    render(body, scores.length === 0
+      ? h("div", { class: "empty" }, "No scores yet — be the first.")
+      : h("div", {}, ...scores.map((e: LeaderboardEntry, i) =>
+          h("div", { class: "statline" },
+            h("span", { class: "k" }, `${i + 1}. ${e.name} `, h("span", { class: "tag" }, e.difficulty)),
+            h("span", { class: "v" }, money(e.net_worth)),
+          ))));
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Settings
 // ---------------------------------------------------------------------------
 
@@ -763,8 +920,11 @@ function settingsView(s: GameState): HTMLElement {
       h("div", { class: "card" }, h("h3", {}, "Sound"),
         h("div", { class: "btn-row" }, h("button", { class: "btn ghost", onClick: () => { toggleMute(); renderAll(document.getElementById("app")!); } }, isMuted() ? "Unmute" : "Mute"))),
       h("div", { class: "card" }, h("h3", {}, "New Game"),
-        h("div", { class: "sub" }, "Start fresh. Your current game is overwritten."),
-        h("div", { class: "btn-row" }, h("button", { class: "btn warn", onClick: () => textModal("New Game", "Company name", (name) => { store.startNewGame(name || "Shore Thing Holdings"); return store.state; }) }, "Start New Game"))),
+        h("div", { class: "sub" }, `Difficulty: ${DIFFICULTIES[s.difficulty].name} · seed ${s.seed}`),
+        h("div", { class: "btn-row" },
+          h("button", { class: "btn warn", onClick: newGameModal }, "Start New Game"),
+          h("button", { class: "btn", onClick: startDailyChallenge }, "Daily Challenge"),
+        )),
       h("div", { class: "card" }, h("h3", {}, "Export / Import"),
         h("div", { class: "btn-row" },
           h("button", { class: "btn ghost", onClick: () => exportModal() }, "Export Save"),
@@ -780,6 +940,45 @@ function settingsView(s: GameState): HTMLElement {
 
 function field(label: string, control: HTMLElement): HTMLElement {
   return h("label", { class: "field" }, label, control);
+}
+
+function newGameModal(): void {
+  let name = "Shore Thing Holdings";
+  let difficulty: Difficulty = "normal";
+  let seedText = "";
+  const body = h("div", {},
+    h("div", { class: "sub" }, "Start fresh. Your current game is overwritten."),
+    field("Company name", h("input", { value: name, onInput: (e) => { name = (e.target as HTMLInputElement).value; } })),
+    field("Difficulty", h("select", { onChange: (e) => { difficulty = (e.target as HTMLSelectElement).value as Difficulty; } },
+      ...(["easy", "normal", "hard"] as Difficulty[]).map((d) => h("option", { value: d, ...(d === "normal" ? {} : {}) }, DIFFICULTIES[d].name)))),
+    field("Seed (optional, shareable)", h("input", { placeholder: "leave blank for random", onInput: (e) => { seedText = (e.target as HTMLInputElement).value; } })),
+  );
+  // Default the difficulty select to normal.
+  const sel = body.querySelector("select") as HTMLSelectElement;
+  if (sel) sel.value = "normal";
+  openModal("New Game", body, [
+    h("button", { class: "btn ghost", onClick: closeModal }, "Cancel"),
+    h("button", { class: "btn warn", onClick: () => {
+      const seed = seedText.trim() ? hashSeed(seedText.trim()) : Math.floor(Math.random() * 0xffffffff);
+      store.startNewGame(name || "Shore Thing Holdings", { seed, difficulty });
+      sfxSuccess();
+      closeModal();
+      view = "dashboard";
+    } }, "Start"),
+  ]);
+}
+
+function startDailyChallenge(): void {
+  const day = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const seed = hashSeed(`daily-${day}`);
+  store.startNewGame(`Daily ${day}`, { seed, difficulty: "normal" });
+  store.flash({ kind: "info", message: `Daily Challenge ${day} — everyone today shares this seed.` });
+  view = "dashboard";
+}
+
+function sfxSuccess(): void {
+  // small helper to play success without dispatching
+  import("./sound").then((m) => m.sfx.success());
 }
 
 function amountModal(title: string, action: (n: number) => GameState): void {

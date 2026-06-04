@@ -1,0 +1,6 @@
+{
+  "_comment": "Override balance constants here without rebuilding. Only an allowlist of keys applies (see src/data/overrides.ts). Empty by default.",
+  "COMPANY": {},
+  "MARKET_MATURITY": {},
+  "FINANCE": {}
+}

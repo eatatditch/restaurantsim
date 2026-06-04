@@ -51,7 +51,8 @@ import {
   withdrawSavings,
 } from "./life";
 import { resolveComplication } from "./events";
-import { type ExecRole } from "../data/index";
+import { buyBackEquity, raiseCapital, repayLoan, takeLoan } from "./finance";
+import { type CapitalRound, type ExecRole } from "../data/index";
 import { buyoutPriceFromLease } from "./realestate";
 import { Rng } from "./rng";
 import { cloneState, log } from "./util";
@@ -310,6 +311,34 @@ export function actAcceptPeOffer(input: GameState, offerId: string): GameState {
   } catch (e) {
     throw new ActionError((e as Error).message);
   }
+  return state;
+}
+
+// ---------------------------------------------------------------------------
+// Financing actions
+// ---------------------------------------------------------------------------
+
+export function actTakeLoan(input: GameState, amount: number): GameState {
+  const state = cloneState(input);
+  try { takeLoan(state, amount); } catch (e) { throw new ActionError((e as Error).message); }
+  return state;
+}
+
+export function actRepayLoan(input: GameState, amount: number): GameState {
+  const state = cloneState(input);
+  try { repayLoan(state, amount); } catch (e) { throw new ActionError((e as Error).message); }
+  return state;
+}
+
+export function actRaiseCapital(input: GameState, round: CapitalRound, amount: number): GameState {
+  const state = cloneState(input);
+  try { raiseCapital(state, round, amount); } catch (e) { throw new ActionError((e as Error).message); }
+  return state;
+}
+
+export function actBuyBackEquity(input: GameState, fraction: number): GameState {
+  const state = cloneState(input);
+  try { buyBackEquity(state, fraction); } catch (e) { throw new ActionError((e as Error).message); }
   return state;
 }
 

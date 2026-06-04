@@ -11,6 +11,31 @@
 export const SAVE_VERSION = 1;
 
 // ---------------------------------------------------------------------------
+// Difficulty modes
+// ---------------------------------------------------------------------------
+
+export type Difficulty = "easy" | "normal" | "hard";
+
+export interface DifficultyDef {
+  id: Difficulty;
+  name: string;
+  startingCash: number;
+  /** Global demand multiplier on every unit's revenue. */
+  demandMult: number;
+  /** Company overhead multiplier. */
+  overheadMult: number;
+  /** Market-maturity ramp-speed multiplier. */
+  rampMult: number;
+}
+
+/** `normal` is neutral (multipliers = 1) so it matches the baseline economy. */
+export const DIFFICULTIES: Record<Difficulty, DifficultyDef> = {
+  easy: { id: "easy", name: "Easy", startingCash: 1_200_000, demandMult: 1.12, overheadMult: 0.9, rampMult: 1.2 },
+  normal: { id: "normal", name: "Normal", startingCash: 750_000, demandMult: 1, overheadMult: 1, rampMult: 1 },
+  hard: { id: "hard", name: "Hard", startingCash: 500_000, demandMult: 0.9, overheadMult: 1.15, rampMult: 0.85 },
+};
+
+// ---------------------------------------------------------------------------
 // Verticals
 // ---------------------------------------------------------------------------
 
@@ -71,6 +96,8 @@ export const RESTAURANT_CONCEPTS: readonly Concept[] = [
   { id: "bakery", name: "Bakery & Cafe", basePrice: 12, priceMult: 0.6, customerMult: 1.9, cogsAdj: -0.03, startingRepBonus: 3, revMult: 1.0 },
   { id: "health", name: "Health & Bowls", basePrice: 18, priceMult: 0.8, customerMult: 1.4, cogsAdj: -0.01, startingRepBonus: 4, revMult: 1.0 },
   { id: "fusion", name: "Fusion Kitchen", basePrice: 38, priceMult: 1.1, customerMult: 0.95, cogsAdj: 0.03, startingRepBonus: 5, revMult: 1.0 },
+  { id: "nextgen", name: "Next-Gen Casual", basePrice: 21, priceMult: 0.85, customerMult: 1.5, cogsAdj: -0.01, startingRepBonus: 5, revMult: 1.0 },
+  { id: "taco", name: "Taco (Next-Gen)", basePrice: 17, priceMult: 0.75, customerMult: 1.6, cogsAdj: -0.02, startingRepBonus: 4, revMult: 1.0 },
 ];
 
 /** Base cost-of-goods ratio for restaurants before per-concept adjustment. */
@@ -278,6 +305,40 @@ export const COMPANY = {
   weeklyOverheadPerUnit: 600,
   startingCash: 750_000,
   startingReputation: 50,
+} as const;
+
+// ---------------------------------------------------------------------------
+// Financing: loans, investors, private equity
+// ---------------------------------------------------------------------------
+
+export const FINANCE = {
+  /** Weekly interest rate charged on outstanding loan principal (~8%/yr). */
+  loanWeeklyRate: 0.08 / 52,
+  /** Borrowing capacity = trailing annual revenue x this + a base, minus debt. */
+  leverageOfRevenue: 0.5,
+  baseBorrowingCapacity: 500_000,
+  /** Investors/PE take this fraction of positive weekly net as a dividend. */
+  maxEquitySold: 0.9,
+} as const;
+
+export type CapitalRound = "angel" | "vc" | "pe";
+
+export interface CapitalRoundDef {
+  id: CapitalRound;
+  name: string;
+  /** Equity fraction sold per dollar raised (higher valuation = less equity). */
+  equityPerDollar: number;
+  /** Minimum raise for this round. */
+  minRaise: number;
+}
+
+export const CAPITAL_ROUNDS: Record<CapitalRound, CapitalRoundDef> = {
+  // ~4% equity per $1M.
+  angel: { id: "angel", name: "Angel Round", equityPerDollar: 0.04 / 1_000_000, minRaise: 250_000 },
+  // ~3% per $1M (better valuation).
+  vc: { id: "vc", name: "Venture Round", equityPerDollar: 0.03 / 1_000_000, minRaise: 1_000_000 },
+  // ~2.5% per $1M but big checks only.
+  pe: { id: "pe", name: "Private Equity", equityPerDollar: 0.025 / 1_000_000, minRaise: 5_000_000 },
 } as const;
 
 // ---------------------------------------------------------------------------

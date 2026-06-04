@@ -75,8 +75,12 @@ function backfill(state: GameState): GameState {
   s.achievements ??= [];
   s.goals ??= [];
   s.log ??= [];
+  s.history ??= [];
+  s.difficulty ??= "normal";
   s.nextId ??= 1;
   s.ownRealEstatePolicy ??= false;
+  s.debt ??= 0;
+  s.investorEquity ??= 0;
   s.expansionPlan ??= { overextensionWeeks: 0, locationsOpenedThisYear: 0 };
   s.personal ??= {
     cash: 0,
