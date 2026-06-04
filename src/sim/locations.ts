@@ -123,6 +123,7 @@ export function createLocation(
     storeCount: 1,
     nrMarginBoost: 0,
     ceoAdjustNet: 0,
+    needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
   };

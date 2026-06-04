@@ -72,9 +72,28 @@ export interface Location {
   /** Per-unit margin band overrides (lifted by sourcing upgrades, CEO, etc.). */
   nrMarginBoost: number;
   ceoAdjustNet: number;
+  /** Acquired competitor units start needing renovation before they perform. */
+  needsRenovation: boolean;
   /** Last computed weekly net for display/regression. */
   lastNet: number;
   lastRevenue: number;
+}
+
+/** A purchasable mega-chain in the acquisitions market. */
+export interface GroupOffer {
+  id: string;
+  name: string;
+  categoryId: string;
+  units: number;
+  askingPrice: number;
+}
+
+/** A small competitor chain (2-4 units) whose units need renovation. */
+export interface CompetitorOffer {
+  id: string;
+  name: string;
+  units: number;
+  askingPrice: number;
 }
 
 export interface PersonalState {
@@ -130,8 +149,10 @@ export interface GameState {
   executives: ExecutivesState;
   ownRealEstatePolicy: boolean;
 
-  /** Acquisition pool of purchasable mega-chains (populated in Phase 6). */
-  bigGroups: unknown[];
+  /** Acquisition market: purchasable mega-chains and small competitor chains. */
+  bigGroups: GroupOffer[];
+  competitorChains: CompetitorOffer[];
+  lastAcquisitionRefresh: number;
 
   personal: PersonalState;
 
@@ -186,6 +207,8 @@ export function newGame(opts: NewGameOptions = {}): GameState {
     ownRealEstatePolicy: false,
 
     bigGroups: [],
+    competitorChains: [],
+    lastAcquisitionRefresh: 0,
 
     personal: {
       cash: 0,

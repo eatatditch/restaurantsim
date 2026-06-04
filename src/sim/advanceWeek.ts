@@ -22,6 +22,7 @@ import {
   processLeaseEscalations,
   processLeaseExpiries,
 } from "./realestate.ts";
+import { tickAcquisitions } from "./acquisitions.ts";
 import { findBrand } from "./brands.ts";
 import {
   calculateNonRestaurantPL,
@@ -92,6 +93,7 @@ export function advanceWeek(input: GameState): GameState {
 
   // 6. Personal tick -> Phase 8.
   // 7. Events / complications -> Phase 9.
+  tickAcquisitions(state, rng);
   // 8. CEO autonomy -> Phase 7.
 
   // 9. Reputation drifts toward the portfolio's quality.

@@ -332,6 +332,48 @@ export const DIGITAL = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Acquisitions
+// ---------------------------------------------------------------------------
+
+/** Big-group categories: refreshing market of purchasable mega-chains. */
+export interface GroupCategory {
+  id: string;
+  name: string;
+  minUnits: number;
+  maxUnits: number;
+  /** Aggregate weekly revenue contributed per store. */
+  weeklyRevenuePerStore: number;
+  /** Acquisition price charged per store. */
+  pricePerStore: number;
+  /** Cost to build out one additional store when scaling the division. */
+  buildoutPerStore: number;
+}
+
+export const GROUP_CATEGORIES: readonly GroupCategory[] = [
+  { id: "coffee", name: "Coffee", minUnits: 40, maxUnits: 130, weeklyRevenuePerStore: 22_000, pricePerStore: 320_000, buildoutPerStore: 240_000 },
+  { id: "burger", name: "Burger", minUnits: 25, maxUnits: 110, weeklyRevenuePerStore: 34_000, pricePerStore: 420_000, buildoutPerStore: 300_000 },
+  { id: "fastcasual", name: "Fast Casual", minUnits: 20, maxUnits: 80, weeklyRevenuePerStore: 38_000, pricePerStore: 460_000, buildoutPerStore: 330_000 },
+  { id: "pizza", name: "Pizza", minUnits: 30, maxUnits: 120, weeklyRevenuePerStore: 26_000, pricePerStore: 300_000, buildoutPerStore: 220_000 },
+  { id: "chicken", name: "Chicken", minUnits: 20, maxUnits: 90, weeklyRevenuePerStore: 36_000, pricePerStore: 440_000, buildoutPerStore: 320_000 },
+  { id: "taco", name: "Taco", minUnits: 25, maxUnits: 100, weeklyRevenuePerStore: 28_000, pricePerStore: 330_000, buildoutPerStore: 240_000 },
+  { id: "donut", name: "Donut", minUnits: 15, maxUnits: 70, weeklyRevenuePerStore: 20_000, pricePerStore: 280_000, buildoutPerStore: 200_000 },
+];
+
+export const ACQUISITIONS = {
+  /** How many big-group offers sit in the market at once. */
+  groupOfferCount: 4,
+  /** Weeks between market refreshes. */
+  refreshEveryWeeks: 8,
+  /** Competitor chains are small (2-4 units) and need renovation. */
+  competitorMinUnits: 2,
+  competitorMaxUnits: 4,
+  competitorPricePerUnit: 380_000,
+  competitorOfferCount: 3,
+  /** Cost to renovate (rebrand) an acquired competitor unit into your brand. */
+  renovationCost: 150_000,
+} as const;
+
+// ---------------------------------------------------------------------------
 // Facilities Manager (executes the buy-and-own mandate)
 // ---------------------------------------------------------------------------
 

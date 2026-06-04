@@ -19,6 +19,12 @@ import { createBrand, findBrand, type BrandSpec } from "./brands.ts";
 import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
 import { openExpansionUnits } from "./expansion.ts";
 import { createNrLocation, goFullyDigital, nrBuildCost } from "./investments.ts";
+import {
+  acquireBigGroup,
+  acquireCompetitor,
+  renovateUnit,
+  scaleGroupDivision,
+} from "./acquisitions.ts";
 import { buyoutPriceFromLease } from "./realestate.ts";
 import { Rng } from "./rng.ts";
 import { cloneState, log } from "./util.ts";
@@ -172,6 +178,50 @@ export function actGoFullyDigital(input: GameState, brandId: string): GameState 
     "digital",
     `${brand.name} went fully digital: liquidated stores for ${result.liquidationProceeds}.`,
   );
+  return state;
+}
+
+/** Acquire a big group as an aggregate division unit. */
+export function actAcquireBigGroup(input: GameState, offerId: string): GameState {
+  const state = cloneState(input);
+  try {
+    acquireBigGroup(state, offerId);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+/** Scale a group division by building out more stores. */
+export function actScaleGroupDivision(input: GameState, locId: string, addStores: number): GameState {
+  const state = cloneState(input);
+  try {
+    scaleGroupDivision(state, locId, addStores);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+/** Acquire a competitor chain (units arrive needing renovation). */
+export function actAcquireCompetitor(input: GameState, offerId: string): GameState {
+  const state = cloneState(input);
+  try {
+    acquireCompetitor(state, offerId);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+/** Renovate an acquired unit into one of your own brands. */
+export function actRenovateUnit(input: GameState, locId: string, targetBrandId: string): GameState {
+  const state = cloneState(input);
+  try {
+    renovateUnit(state, locId, targetBrandId);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
   return state;
 }
 

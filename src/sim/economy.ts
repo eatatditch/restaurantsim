@@ -200,7 +200,9 @@ export function calculateRestaurantPL(
   const customers = Math.min(rawDemand, capacity);
 
   const avgCheck = concept.basePrice * concept.priceMult * tier.priceMult * setting.priceFactor;
-  const revenue = customers * avgCheck;
+  // Un-renovated acquired units are run-down and underperform until flipped.
+  const renovationMult = loc.needsRenovation ? 0.5 : 1;
+  const revenue = customers * avgCheck * renovationMult;
 
   // --- Cost side ---
   const sourcingRelief = loc.nrUpgrades.sourcing * 0.015;

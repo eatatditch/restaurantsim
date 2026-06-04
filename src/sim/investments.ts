@@ -70,6 +70,7 @@ export function createNrLocation(
     storeCount: 1,
     nrMarginBoost: 0,
     ceoAdjustNet: 0,
+    needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
   };
@@ -141,6 +142,7 @@ export function goFullyDigital(state: GameState, brand: Brand): DigitalConversio
     storeCount: 1,
     nrMarginBoost: 0,
     ceoAdjustNet: 0,
+    needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
   };

@@ -64,6 +64,8 @@ function backfill(state: GameState): GameState {
   s.brands ??= [];
   s.locations ??= [];
   s.bigGroups ??= [];
+  s.competitorChains ??= [];
+  s.lastAcquisitionRefresh ??= 0;
   s.complications ??= [];
   s.achievements ??= [];
   s.goals ??= [];
