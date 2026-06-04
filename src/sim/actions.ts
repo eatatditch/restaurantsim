@@ -25,6 +25,15 @@ import {
   renovateUnit,
   scaleGroupDivision,
 } from "./acquisitions.ts";
+import {
+  acceptPeOffer,
+  ceoSitDown,
+  hireCeo,
+  resolveMeeting,
+  setCeoGoals,
+  setExec,
+} from "./executives.ts";
+import { type ExecRole } from "../data/index.ts";
 import { buyoutPriceFromLease } from "./realestate.ts";
 import { Rng } from "./rng.ts";
 import { cloneState, log } from "./util.ts";
@@ -219,6 +228,67 @@ export function actRenovateUnit(input: GameState, locId: string, targetBrandId: 
   const state = cloneState(input);
   try {
     renovateUnit(state, locId, targetBrandId);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+/** Hire or release a C-suite executive (president/cmo/cfo/coo). */
+export function actSetExec(input: GameState, role: ExecRole, hired: boolean): GameState {
+  const state = cloneState(input);
+  setExec(state, role, hired);
+  return state;
+}
+
+/** Resolve a pending C-suite meeting by choosing an option. */
+export function actResolveMeeting(input: GameState, optionIndex: number): GameState {
+  const state = cloneState(input);
+  const rng = Rng.fromState(state.rngState);
+  try {
+    resolveMeeting(state, optionIndex, rng);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  state.rngState = rng.toState();
+  return state;
+}
+
+/** Hire a professional CEO and step up to a board role. */
+export function actHireCeo(input: GameState): GameState {
+  const state = cloneState(input);
+  hireCeo(state);
+  return state;
+}
+
+/** Set the CEO's autonomous expansion goals. */
+export function actSetCeoGoals(
+  input: GameState,
+  goals: { newLocationsPerBrand: number; growChains: number; newBrands: number },
+): GameState {
+  const state = cloneState(input);
+  setCeoGoals(state, goals);
+  return state;
+}
+
+/** The quarterly CEO sit-down: approve eases pressure, push harder raises it. */
+export function actCeoSitDown(input: GameState, decision: "approve" | "pushHarder"): GameState {
+  const state = cloneState(input);
+  const rng = Rng.fromState(state.rngState);
+  try {
+    ceoSitDown(state, decision, rng);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  state.rngState = rng.toState();
+  return state;
+}
+
+/** Accept a PE buyout offer for one of your brands. */
+export function actAcceptPeOffer(input: GameState, offerId: string): GameState {
+  const state = cloneState(input);
+  try {
+    acceptPeOffer(state, offerId);
   } catch (e) {
     throw new ActionError((e as Error).message);
   }

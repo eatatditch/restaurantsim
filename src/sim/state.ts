@@ -119,8 +119,31 @@ export interface ExecutivesState {
     hired: boolean;
     phase: "none" | "golden" | "decline" | "shift" | "failing";
     pressure: number;
+    weeksInRole: number;
+    goals: { newLocationsPerBrand: number; growChains: number; newBrands: number };
+    pendingSitDown: boolean;
   };
   founderRole: "ceo" | "chairman" | "board";
+}
+
+/** A pending C-suite meeting decision awaiting the player's choice. */
+export interface PendingMeeting {
+  meetingId: string;
+  week: number;
+}
+
+/** A private-equity buyout offer for one of the player's brands. */
+export interface PeOffer {
+  id: string;
+  brandId: string;
+  price: number;
+}
+
+/** A temporary company-wide revenue buff (from meetings/events). */
+export interface ActiveBuff {
+  revMult: number;
+  weeksLeft: number;
+  note: string;
 }
 
 export interface LogEntry {
@@ -153,6 +176,11 @@ export interface GameState {
   bigGroups: GroupOffer[];
   competitorChains: CompetitorOffer[];
   lastAcquisitionRefresh: number;
+
+  /** Executive layer extras. */
+  pendingMeeting: PendingMeeting | null;
+  peOffers: PeOffer[];
+  activeBuffs: ActiveBuff[];
 
   personal: PersonalState;
 
@@ -201,7 +229,14 @@ export function newGame(opts: NewGameOptions = {}): GameState {
       cfo: false,
       coo: false,
       facilities: false,
-      proCeo: { hired: false, phase: "none", pressure: 0 },
+      proCeo: {
+        hired: false,
+        phase: "none",
+        pressure: 0,
+        weeksInRole: 0,
+        goals: { newLocationsPerBrand: 0, growChains: 0, newBrands: 0 },
+        pendingSitDown: false,
+      },
       founderRole: "ceo",
     },
     ownRealEstatePolicy: false,
@@ -209,6 +244,10 @@ export function newGame(opts: NewGameOptions = {}): GameState {
     bigGroups: [],
     competitorChains: [],
     lastAcquisitionRefresh: 0,
+
+    pendingMeeting: null,
+    peOffers: [],
+    activeBuffs: [],
 
     personal: {
       cash: 0,

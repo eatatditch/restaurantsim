@@ -332,6 +332,118 @@ export const DIGITAL = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Executives (C-suite) + pro-CEO
+// ---------------------------------------------------------------------------
+
+export type ExecRole = "president" | "cmo" | "cfo" | "coo";
+
+export interface ExecDef {
+  id: ExecRole;
+  name: string;
+  weeklySalary: number;
+  /** Company-wide revenue multiplier while employed. */
+  revenueMult: number;
+  /** Company overhead multiplier while employed (lower = cheaper). */
+  overheadMult: number;
+}
+
+export const EXECUTIVES: Record<ExecRole, ExecDef> = {
+  president: { id: "president", name: "President", weeklySalary: 8000, revenueMult: 1.03, overheadMult: 0.9 },
+  cmo: { id: "cmo", name: "CMO", weeklySalary: 6000, revenueMult: 1.07, overheadMult: 1.0 },
+  cfo: { id: "cfo", name: "CFO", weeklySalary: 6500, revenueMult: 1.0, overheadMult: 0.85 },
+  coo: { id: "coo", name: "COO", weeklySalary: 6000, revenueMult: 1.04, overheadMult: 0.95 },
+};
+
+/** A C-suite meeting: a periodic multiple-choice decision. */
+export interface CSuiteOutcome {
+  weight: number;
+  note: string;
+  cash?: number;
+  reputation?: number;
+  /** A temporary company-wide revenue buff. */
+  buff?: { revMult: number; weeks: number };
+}
+
+export interface CSuiteOption {
+  label: string;
+  outcomes: CSuiteOutcome[];
+}
+
+export interface CSuiteMeeting {
+  id: string;
+  title: string;
+  prompt: string;
+  options: CSuiteOption[];
+}
+
+export const CSUITE_MEETINGS: readonly CSuiteMeeting[] = [
+  {
+    id: "celebrity",
+    title: "Celebrity Endorsement",
+    prompt: "A coastal celebrity wants to front a campaign for a steep fee.",
+    options: [
+      {
+        label: "Sign the deal ($400k)",
+        outcomes: [
+          { weight: 6, note: "The campaign pops — sales surge.", cash: -400_000, buff: { revMult: 1.15, weeks: 12 } },
+          { weight: 4, note: "Lukewarm reception; mostly a wash.", cash: -400_000, reputation: 2 },
+        ],
+      },
+      { label: "Pass", outcomes: [{ weight: 1, note: "No change.", reputation: 0 }] },
+    ],
+  },
+  {
+    id: "valuemenu",
+    title: "Value-Menu Reset",
+    prompt: "The CFO proposes a value-menu reset to drive traffic.",
+    options: [
+      {
+        label: "Roll it out",
+        outcomes: [
+          { weight: 5, note: "Traffic up, margins thin briefly.", buff: { revMult: 1.08, weeks: 16 } },
+          { weight: 5, note: "Cannibalized higher-margin orders.", reputation: -2 },
+        ],
+      },
+      { label: "Hold prices", outcomes: [{ weight: 1, note: "Steady as she goes.", reputation: 1 }] },
+    ],
+  },
+  {
+    id: "supplier",
+    title: "Supplier Renegotiation",
+    prompt: "Lock in a long-term supplier contract?",
+    options: [
+      {
+        label: "Lock it in",
+        outcomes: [
+          { weight: 7, note: "Costs drop company-wide.", buff: { revMult: 1.05, weeks: 20 } },
+          { weight: 3, note: "Quality slips; reputation dips.", reputation: -3 },
+        ],
+      },
+      { label: "Stay flexible", outcomes: [{ weight: 1, note: "No change.", reputation: 0 }] },
+    ],
+  },
+];
+
+export const CEO = {
+  weeklySalary: 12_000,
+  /** Weeks per CEO build cycle (quarterly). */
+  buildCycleWeeks: 13,
+  goldenWeeks: 26,
+  declineWeeks: 52,
+  /** Phase revenue multipliers. */
+  phaseRevenueMult: { none: 1, golden: 1.06, decline: 0.97, shift: 0.94, failing: 0.88 } as const,
+  /** Pressure thresholds for lifecycle phases. */
+  shiftPressure: 70,
+  failingPressure: 85,
+  /** Quarterly natural pressure creep. */
+  pressureCreep: 6,
+  approveRelief: 15,
+  pushPenalty: 20,
+  /** Probability a quarter surfaces a PE buyout offer for a brand. */
+  peOfferChance: 0.25,
+} as const;
+
+// ---------------------------------------------------------------------------
 // Acquisitions
 // ---------------------------------------------------------------------------
 

@@ -13,10 +13,19 @@
 import {
   CITY_MARKETS,
   COMPANY,
+  EXPANSION,
   FACILITIES,
   PRICE_TIERS,
   UPGRADE_EFFECTS,
 } from "../data/index.ts";
+import {
+  companyOverheadMult,
+  companyRevenueMult,
+  execSalaries,
+  maybeScheduleMeeting,
+  tickBuffs,
+  tickCeo,
+} from "./executives.ts";
 import {
   ownershipSweep,
   processLeaseEscalations,
@@ -74,12 +83,13 @@ export function advanceWeek(input: GameState): GameState {
     weeklyNet += pl.net;
   }
 
-  // 4. Company overhead (exec salaries / loan interest arrive in Phase 7).
+  // 4. Company overhead (exec-reduced) + executive salaries.
   const openUnits = state.locations.filter((l) => l.status === "open").length;
-  const overhead = COMPANY.weeklyOverheadBase + COMPANY.weeklyOverheadPerUnit * openUnits;
+  const overhead =
+    (COMPANY.weeklyOverheadBase + COMPANY.weeklyOverheadPerUnit * openUnits) *
+    companyOverheadMult(state);
   weeklyNet -= overhead;
-
-  // Facilities Manager salary (other exec salaries arrive in Phase 7).
+  weeklyNet -= execSalaries(state);
   if (state.executives.facilities) {
     weeklyNet -= FACILITIES.weeklySalary;
   }
@@ -92,9 +102,14 @@ export function advanceWeek(input: GameState): GameState {
   ownershipSweep(state);
 
   // 6. Personal tick -> Phase 8.
-  // 7. Events / complications -> Phase 9.
+
+  // 7. Events / complications + acquisitions market + C-suite meetings.
   tickAcquisitions(state, rng);
-  // 8. CEO autonomy -> Phase 7.
+  tickBuffs(state);
+  maybeScheduleMeeting(state, rng);
+
+  // 8. CEO autonomy tick (quarterly builds, lifecycle, sit-downs, PE offers).
+  tickCeo(state, rng);
 
   // 9. Reputation drifts toward the portfolio's quality.
   state.reputation = updateReputation(state);
@@ -118,9 +133,13 @@ export function advanceWeek(input: GameState): GameState {
 /** Company-wide P&L modifiers assembled from current state (mostly neutral). */
 function modifiersFor(state: GameState): PLModifiers {
   const mods = neutralModifiers();
+  // Executive layer, CEO phase, and active buffs fold into the revenue mult.
+  mods.execRevenueMult = companyRevenueMult(state);
   // Overextension drags revenue while the strain window is open.
   if (state.expansionPlan.overextensionWeeks > 0) {
-    mods.overextensionMult = 0.88;
+    mods.overextensionMult = EXPANSION.overextensionRevenueDrag > 0
+      ? 1 - EXPANSION.overextensionRevenueDrag
+      : 0.88;
   }
   return mods;
 }

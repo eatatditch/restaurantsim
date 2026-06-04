@@ -66,6 +66,9 @@ function backfill(state: GameState): GameState {
   s.bigGroups ??= [];
   s.competitorChains ??= [];
   s.lastAcquisitionRefresh ??= 0;
+  s.pendingMeeting ??= null;
+  s.peOffers ??= [];
+  s.activeBuffs ??= [];
   s.complications ??= [];
   s.achievements ??= [];
   s.goals ??= [];
@@ -91,9 +94,20 @@ function backfill(state: GameState): GameState {
     cfo: false,
     coo: false,
     facilities: false,
-    proCeo: { hired: false, phase: "none", pressure: 0 },
+    proCeo: {
+      hired: false,
+      phase: "none",
+      pressure: 0,
+      weeksInRole: 0,
+      goals: { newLocationsPerBrand: 0, growChains: 0, newBrands: 0 },
+      pendingSitDown: false,
+    },
     founderRole: "ceo",
   };
+  // Backfill newer proCeo sub-fields on older saves.
+  s.executives.proCeo.weeksInRole ??= 0;
+  s.executives.proCeo.goals ??= { newLocationsPerBrand: 0, growChains: 0, newBrands: 0 };
+  s.executives.proCeo.pendingSitDown ??= false;
   return s;
 }
 
