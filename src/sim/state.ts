@@ -18,8 +18,8 @@ import {
   type TrafficTier,
   type UpgradeKind,
   type Vertical,
-} from "../data/index.ts";
-import { Rng, type RngState } from "./rng.ts";
+} from "../data/index";
+import { Rng, type RngState } from "./rng";
 
 export interface Brand {
   id: string;

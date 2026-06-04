@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
+import { newGame, type GameState } from "../src/sim/state";
 import {
   actCeoSitDown,
   actCreateBrand,
@@ -7,10 +7,10 @@ import {
   actResolveMeeting,
   actSetCeoGoals,
   actSetExec,
-} from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { companyRevenueMult } from "../src/sim/executives.ts";
-import { CEO, EXECUTIVES } from "../src/data/index.ts";
+} from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { companyRevenueMult } from "../src/sim/executives";
+import { CEO, EXECUTIVES } from "../src/data/index";
 
 function gameWithUnit(seed = 600): GameState {
   let s = newGame({ seed });

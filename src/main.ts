@@ -4,7 +4,7 @@
  * placeholder so the static build has something to deploy.
  */
 
-import { newGame } from "./sim/state.ts";
+import { newGame } from "./sim/state";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (app) {

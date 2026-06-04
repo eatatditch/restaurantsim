@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
+import { newGame, type GameState } from "../src/sim/state";
 import {
   actAcquireBigGroup,
   actAcquireCompetitor,
@@ -7,10 +7,10 @@ import {
   actRenovateUnit,
   actScaleGroupDivision,
   ActionError,
-} from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { refreshAcquisitions } from "../src/sim/acquisitions.ts";
-import { Rng } from "../src/sim/rng.ts";
+} from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { refreshAcquisitions } from "../src/sim/acquisitions";
+import { Rng } from "../src/sim/rng";
 
 function gameWithMarket(seed = 500, cash = 200_000_000): GameState {
   let s = newGame({ seed });

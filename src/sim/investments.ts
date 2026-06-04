@@ -15,9 +15,9 @@ import {
   MARKET_MATURITY,
   NR_VERTICALS,
   type Vertical,
-} from "../data/index.ts";
-import { brandUnits } from "./brands.ts";
-import { allocId, type Brand, type GameState, type Lease, type Location } from "./state.ts";
+} from "../data/index";
+import { brandUnits } from "./brands";
+import { allocId, type Brand, type GameState, type Lease, type Location } from "./state";
 
 function city(id: string) {
   const c = CITY_MARKETS.find((x) => x.id === id);

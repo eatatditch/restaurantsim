@@ -14,17 +14,17 @@ import {
   type Positioning,
   type StaffRole,
   type UpgradeKind,
-} from "../data/index.ts";
-import { createBrand, findBrand, type BrandSpec } from "./brands.ts";
-import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
-import { openExpansionUnits } from "./expansion.ts";
-import { createNrLocation, goFullyDigital, nrBuildCost } from "./investments.ts";
+} from "../data/index";
+import { createBrand, findBrand, type BrandSpec } from "./brands";
+import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations";
+import { openExpansionUnits } from "./expansion";
+import { createNrLocation, goFullyDigital, nrBuildCost } from "./investments";
 import {
   acquireBigGroup,
   acquireCompetitor,
   renovateUnit,
   scaleGroupDivision,
-} from "./acquisitions.ts";
+} from "./acquisitions";
 import {
   acceptPeOffer,
   ceoSitDown,
@@ -32,12 +32,12 @@ import {
   resolveMeeting,
   setCeoGoals,
   setExec,
-} from "./executives.ts";
-import { type ExecRole } from "../data/index.ts";
-import { buyoutPriceFromLease } from "./realestate.ts";
-import { Rng } from "./rng.ts";
-import { cloneState, log } from "./util.ts";
-import type { GameState } from "./state.ts";
+} from "./executives";
+import { type ExecRole } from "../data/index";
+import { buyoutPriceFromLease } from "./realestate";
+import { Rng } from "./rng";
+import { cloneState, log } from "./util";
+import type { GameState } from "./state";
 
 export class ActionError extends Error {}
 

@@ -13,9 +13,9 @@
  * which already cloned). The one-shot buy-out-all is exposed as an action.
  */
 
-import { FACILITIES, LAND_BUYOUT_RENT_MULTIPLE } from "../data/index.ts";
-import { log } from "./util.ts";
-import type { GameState, Location } from "./state.ts";
+import { FACILITIES, LAND_BUYOUT_RENT_MULTIPLE } from "../data/index";
+import { log } from "./util";
+import type { GameState, Location } from "./state";
 
 /** Buyout price to own a leased building, from its current rent. */
 export function buyoutPriceFromLease(loc: Location): number {

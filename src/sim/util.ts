@@ -2,7 +2,7 @@
  * Small shared helpers for the sim. Kept dependency-free and pure.
  */
 
-import type { GameState, LogEntry } from "./state.ts";
+import type { GameState, LogEntry } from "./state";
 
 /** Deep clone a state at an action/tick boundary so callers never mutate input. */
 export function cloneState(state: GameState): GameState {

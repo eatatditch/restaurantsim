@@ -24,9 +24,9 @@ import {
   VERTICAL_MARGIN_BANDS,
   type MarginBand,
   type Vertical,
-} from "../data/index.ts";
-import type { Brand, Location } from "./state.ts";
-import type { Rng } from "./rng.ts";
+} from "../data/index";
+import type { Brand, Location } from "./state";
+import type { Rng } from "./rng";
 
 /** Weeks at which a unit is considered fully mature for banding purposes. */
 export const MATURE_WEEKS = 104;

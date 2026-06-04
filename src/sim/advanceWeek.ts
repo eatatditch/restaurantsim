@@ -17,7 +17,7 @@ import {
   FACILITIES,
   PRICE_TIERS,
   UPGRADE_EFFECTS,
-} from "../data/index.ts";
+} from "../data/index";
 import {
   companyOverheadMult,
   companyRevenueMult,
@@ -25,25 +25,25 @@ import {
   maybeScheduleMeeting,
   tickBuffs,
   tickCeo,
-} from "./executives.ts";
+} from "./executives";
 import {
   ownershipSweep,
   processLeaseEscalations,
   processLeaseExpiries,
-} from "./realestate.ts";
-import { tickAcquisitions } from "./acquisitions.ts";
-import { findBrand } from "./brands.ts";
+} from "./realestate";
+import { tickAcquisitions } from "./acquisitions";
+import { findBrand } from "./brands";
 import {
   calculateNonRestaurantPL,
   calculateRestaurantPL,
   neutralModifiers,
   rampMaturity,
   type PLModifiers,
-} from "./economy.ts";
-import { tickLifecycle } from "./locations.ts";
-import { Rng } from "./rng.ts";
-import { cloneState, log } from "./util.ts";
-import type { GameState, Location } from "./state.ts";
+} from "./economy";
+import { tickLifecycle } from "./locations";
+import { Rng } from "./rng";
+import { cloneState, log } from "./util";
+import type { GameState, Location } from "./state";
 
 const WEEKS_PER_YEAR = 52;
 

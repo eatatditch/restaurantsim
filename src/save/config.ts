@@ -7,8 +7,8 @@
  * local-only saves (e.g. in tests or offline).
  */
 
-import { createSupabaseClient, SupabaseSaveAdapter } from "./supabase.ts";
-import { LocalStorageAdapter, type SaveAdapter } from "./storage.ts";
+import { createSupabaseClient, SupabaseSaveAdapter } from "./supabase";
+import { LocalStorageAdapter, type SaveAdapter } from "./storage";
 
 interface ViteEnv {
   VITE_SUPABASE_URL?: string;

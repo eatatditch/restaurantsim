@@ -19,9 +19,9 @@
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { deserialize, serialize } from "./serialize.ts";
-import type { SaveAdapter, SaveSlot } from "./storage.ts";
-import type { GameState } from "../sim/state.ts";
+import { deserialize, serialize } from "./serialize";
+import type { SaveAdapter, SaveSlot } from "./storage";
+import type { GameState } from "../sim/state";
 
 export function createSupabaseClient(url: string, anonKey: string): SupabaseClient {
   return createClient(url, anonKey, {

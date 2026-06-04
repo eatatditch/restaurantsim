@@ -8,12 +8,12 @@
  * maturity) and a company-wide strain window.
  */
 
-import { CITY_MARKETS, EXPANSION, LOCATION_SETTINGS } from "../data/index.ts";
-import { findBrand } from "./brands.ts";
-import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
-import { Rng } from "./rng.ts";
-import { log } from "./util.ts";
-import type { Brand, GameState } from "./state.ts";
+import { CITY_MARKETS, EXPANSION, LOCATION_SETTINGS } from "../data/index";
+import { findBrand } from "./brands";
+import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations";
+import { Rng } from "./rng";
+import { log } from "./util";
+import type { Brand, GameState } from "./state";
 
 /**
  * Management bandwidth: how many locations can be opened per year before

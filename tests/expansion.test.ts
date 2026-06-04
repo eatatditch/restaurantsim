@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
-import { actBulkOpen, actCreateBrand } from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { managementCapacity, maxAffordableOpen } from "../src/sim/expansion.ts";
-import { EXPANSION } from "../src/data/index.ts";
+import { newGame, type GameState } from "../src/sim/state";
+import { actBulkOpen, actCreateBrand } from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { managementCapacity, maxAffordableOpen } from "../src/sim/expansion";
+import { EXPANSION } from "../src/data/index";
 
 function gameWithBrand(seed = 300, cash = 100_000_000): GameState {
   let s = newGame({ seed });

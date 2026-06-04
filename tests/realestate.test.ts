@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
+import { newGame, type GameState } from "../src/sim/state";
 import {
   actBuyLand,
   actBuyOutAllLeases,
@@ -8,10 +8,10 @@ import {
   actSetFacilities,
   actSetOwnPolicy,
   ActionError,
-} from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { buyoutPriceFromLease } from "../src/sim/realestate.ts";
-import { FACILITIES } from "../src/data/index.ts";
+} from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { buyoutPriceFromLease } from "../src/sim/realestate";
+import { FACILITIES } from "../src/data/index";
 
 function withLeasedUnits(count: number, seed = 200): GameState {
   let s = newGame({ seed });

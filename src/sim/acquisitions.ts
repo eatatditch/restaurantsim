@@ -9,10 +9,10 @@
  * each need renovation; the player flips each into one of their own brands.
  */
 
-import { ACQUISITIONS, GROUP_CATEGORIES, type GroupCategory } from "../data/index.ts";
-import { findBrand } from "./brands.ts";
-import { Rng } from "./rng.ts";
-import { log } from "./util.ts";
+import { ACQUISITIONS, GROUP_CATEGORIES, type GroupCategory } from "../data/index";
+import { findBrand } from "./brands";
+import { Rng } from "./rng";
+import { log } from "./util";
 import {
   allocId,
   type Brand,
@@ -20,7 +20,7 @@ import {
   type GameState,
   type GroupOffer,
   type Location,
-} from "./state.ts";
+} from "./state";
 
 const GROUP_NAME_PARTS = ["Sunrise", "Coastal", "Summit", "Liberty", "Harbor", "Golden", "Metro", "Pacific"];
 const COMPETITOR_NAMES = ["Rival Reef", "Dockside Diner", "Gull & Grill", "Anchor Eats", "Pier Provisions"];

@@ -9,8 +9,8 @@
  * older-version save migrates without throwing.
  */
 
-import { SAVE_VERSION } from "../data/index.ts";
-import type { GameState } from "../sim/state.ts";
+import { SAVE_VERSION } from "../data/index";
+import type { GameState } from "../sim/state";
 
 /** A save blob as stored on disk / in the cloud. */
 export interface SaveBlob {

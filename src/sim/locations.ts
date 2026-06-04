@@ -16,8 +16,8 @@ import {
   type StaffRole,
   type TrafficTier,
   type UpgradeKind,
-} from "../data/index.ts";
-import { allocId, type Brand, type GameState, type Lease, type Location } from "./state.ts";
+} from "../data/index";
+import { allocId, type Brand, type GameState, type Lease, type Location } from "./state";
 
 function lookup<T extends { id: string }>(arr: readonly T[], id: string): T {
   const found = arr.find((x) => x.id === id);

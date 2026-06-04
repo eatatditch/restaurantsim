@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
+import { newGame, type GameState } from "../src/sim/state";
 import {
   actBuyUpgrade,
   actCreateBrand,
   actOpenLocation,
   actSetPositioning,
   ActionError,
-} from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { governMargin, marginBandFor } from "../src/sim/economy.ts";
-import { OCCUPANCY_RATIO_CAP } from "../src/data/index.ts";
+} from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { governMargin, marginBandFor } from "../src/sim/economy";
+import { OCCUPANCY_RATIO_CAP } from "../src/data/index";
 
 /** Build a game with one restaurant brand and one open location. */
 function gameWithOpenUnit(seed = 100): GameState {

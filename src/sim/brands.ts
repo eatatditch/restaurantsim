@@ -7,8 +7,8 @@ import {
   RESTAURANT_CONCEPTS,
   type Positioning,
   type Vertical,
-} from "../data/index.ts";
-import { allocId, type Brand, type GameState } from "./state.ts";
+} from "../data/index";
+import { allocId, type Brand, type GameState } from "./state";
 
 export interface BrandSpec {
   name: string;

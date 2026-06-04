@@ -7,8 +7,8 @@
  * spec calls for — now backed by real Supabase Auth + a `saves` table.
  */
 
-import { deserialize, serialize } from "./serialize.ts";
-import type { GameState } from "../sim/state.ts";
+import { deserialize, serialize } from "./serialize";
+import type { GameState } from "../sim/state";
 
 export interface SaveSlot {
   id: string;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { newGame } from "../src/sim/state.ts";
-import { Rng } from "../src/sim/rng.ts";
+import { newGame } from "../src/sim/state";
+import { Rng } from "../src/sim/rng";
 
 /**
  * Determinism is the foundational invariant for the whole sim. Until

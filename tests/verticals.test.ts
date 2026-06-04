@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { newGame, type GameState } from "../src/sim/state.ts";
+import { newGame, type GameState } from "../src/sim/state";
 import {
   actBuyNrUpgrade,
   actCreateBrand,
   actGoFullyDigital,
   actOpenNonRestaurant,
   ActionError,
-} from "../src/sim/actions.ts";
-import { advanceWeek } from "../src/sim/advanceWeek.ts";
-import { marginBandFor } from "../src/sim/economy.ts";
-import { MARKET_MATURITY, NR_UPGRADE } from "../src/data/index.ts";
+} from "../src/sim/actions";
+import { advanceWeek } from "../src/sim/advanceWeek";
+import { marginBandFor } from "../src/sim/economy";
+import { MARKET_MATURITY, NR_UPGRADE } from "../src/data/index";
 
 function apparelGame(seed = 400): GameState {
   let s = newGame({ seed });

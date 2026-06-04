@@ -14,12 +14,12 @@ import {
   CSUITE_MEETINGS,
   EXECUTIVES,
   type ExecRole,
-} from "../data/index.ts";
-import { findBrand } from "./brands.ts";
-import { openExpansionUnits } from "./expansion.ts";
-import { Rng } from "./rng.ts";
-import { allocId, type GameState } from "./state.ts";
-import { log } from "./util.ts";
+} from "../data/index";
+import { findBrand } from "./brands";
+import { openExpansionUnits } from "./expansion";
+import { Rng } from "./rng";
+import { allocId, type GameState } from "./state";
+import { log } from "./util";
 
 // ---------------------------------------------------------------------------
 // C-suite roles

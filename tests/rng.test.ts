@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Rng } from "../src/sim/rng.ts";
+import { Rng } from "../src/sim/rng";
 
 describe("Rng", () => {
   it("is deterministic for a given seed", () => {

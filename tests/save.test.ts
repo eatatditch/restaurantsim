@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { newGame } from "../src/sim/state.ts";
-import { deserialize, migrate, serialize } from "../src/save/serialize.ts";
-import { SAVE_VERSION } from "../src/data/index.ts";
+import { newGame } from "../src/sim/state";
+import { deserialize, migrate, serialize } from "../src/save/serialize";
+import { SAVE_VERSION } from "../src/data/index";
 
 describe("save round-trip", () => {
   it("deserialize(serialize(state)) reproduces an identical state", () => {
