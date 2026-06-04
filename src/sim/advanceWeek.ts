@@ -13,9 +13,15 @@
 import {
   CITY_MARKETS,
   COMPANY,
+  FACILITIES,
   PRICE_TIERS,
   UPGRADE_EFFECTS,
 } from "../data/index.ts";
+import {
+  ownershipSweep,
+  processLeaseEscalations,
+  processLeaseExpiries,
+} from "./realestate.ts";
 import { findBrand } from "./brands.ts";
 import {
   calculateRestaurantPL,
@@ -69,9 +75,18 @@ export function advanceWeek(input: GameState): GameState {
   const overhead = COMPANY.weeklyOverheadBase + COMPANY.weeklyOverheadPerUnit * openUnits;
   weeklyNet -= overhead;
 
+  // Facilities Manager salary (other exec salaries arrive in Phase 7).
+  if (state.executives.facilities) {
+    weeklyNet -= FACILITIES.weeklySalary;
+  }
+
   state.cash += weeklyNet;
 
-  // 5. Lease escalations + FM sweep -> Phase 3.
+  // 5. Lease escalations + expiries + FM ownership sweep.
+  processLeaseEscalations(state);
+  processLeaseExpiries(state);
+  ownershipSweep(state);
+
   // 6. Personal tick -> Phase 8.
   // 7. Events / complications -> Phase 9.
   // 8. CEO autonomy -> Phase 7.

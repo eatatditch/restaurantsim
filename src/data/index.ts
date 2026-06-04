@@ -275,3 +275,17 @@ export const COMPANY = {
   startingCash: 750_000,
   startingReputation: 50,
 } as const;
+
+// ---------------------------------------------------------------------------
+// Facilities Manager (executes the buy-and-own mandate)
+// ---------------------------------------------------------------------------
+
+export const FACILITIES = {
+  weeklySalary: 3500,
+  /** Proactive ownership sweep converts at most this many leases per week. */
+  maxConvertsPerWeek: 2,
+  /** Always keep at least this much company cash when buying buildings. */
+  cashReserve: 250_000,
+  /** A short bridge lease signed when a building can't be bought at expiry. */
+  bridgeLeaseWeeks: 26,
+} as const;

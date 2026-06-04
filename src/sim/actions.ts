@@ -15,6 +15,7 @@ import {
 } from "../data/index.ts";
 import { createBrand, findBrand, type BrandSpec } from "./brands.ts";
 import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
+import { buyoutPriceFromLease } from "./realestate.ts";
 import { cloneState, log } from "./util.ts";
 import type { GameState } from "./state.ts";
 
@@ -92,6 +93,69 @@ export function actBuyUpgrade(input: GameState, locId: string, kind: UpgradeKind
   state.cash -= cost;
   loc.upgrades[kind] = level + 1;
   log(state, "upgrade", `Upgraded ${kind} to level ${level + 1}.`);
+  return state;
+}
+
+/** Toggle the company-wide Buy & Own real estate policy. */
+export function actSetOwnPolicy(input: GameState, on: boolean): GameState {
+  const state = cloneState(input);
+  state.ownRealEstatePolicy = on;
+  log(state, "facilities", `Buy & Own policy ${on ? "enabled" : "disabled"}.`);
+  return state;
+}
+
+/** Hire (or fire) the Facilities Manager who executes the ownership mandate. */
+export function actSetFacilities(input: GameState, hired: boolean): GameState {
+  const state = cloneState(input);
+  state.executives.facilities = hired;
+  log(state, "facilities", hired ? "Hired a Facilities Manager." : "Let the Facilities Manager go.");
+  return state;
+}
+
+/** Buy the building for a single leased unit now (company cash). */
+export function actBuyLand(input: GameState, locId: string): GameState {
+  const state = cloneState(input);
+  const loc = state.locations.find((l) => l.id === locId);
+  if (!loc) throw new ActionError(`Unknown location: ${locId}`);
+  if (!loc.lease) throw new ActionError("Unit already owned");
+  const price = buyoutPriceFromLease(loc);
+  if (state.cash < price) throw new ActionError(`Insufficient funds: need ${price}, have ${state.cash}`);
+  state.cash -= price;
+  loc.lease = null;
+  loc.fmFlagged = false;
+  log(state, "facilities", `Bought building at ${loc.cityId}.`);
+  return state;
+}
+
+/**
+ * One-shot: buy every leased building immediately. Company cash first, then
+ * personal funds; anything still unaffordable is flagged for the FM to finish.
+ */
+export function actBuyOutAllLeases(input: GameState): GameState {
+  const state = cloneState(input);
+  let bought = 0;
+  let flagged = 0;
+  for (const loc of state.locations) {
+    if (!loc.lease) continue;
+    const price = buyoutPriceFromLease(loc);
+    if (state.cash >= price) {
+      state.cash -= price;
+      loc.lease = null;
+      loc.fmFlagged = false;
+      bought += 1;
+    } else if (state.cash + state.personal.cash >= price) {
+      const fromPersonal = price - state.cash;
+      state.personal.cash -= fromPersonal;
+      state.cash = 0;
+      loc.lease = null;
+      loc.fmFlagged = false;
+      bought += 1;
+    } else {
+      loc.fmFlagged = true;
+      flagged += 1;
+    }
+  }
+  log(state, "facilities", `Buy-out-all: bought ${bought}, flagged ${flagged} for the FM.`);
   return state;
 }
 
