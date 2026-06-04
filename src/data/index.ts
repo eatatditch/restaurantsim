@@ -263,6 +263,10 @@ export const EXPANSION = {
   overextensionRevenueDrag: 0.12,
   /** Weeks the strain window lasts after an overextension event. */
   strainWeeks: 8,
+  /** Bulk-open keeps at least this much company cash in reserve. */
+  cashReserve: 100_000,
+  /** Hard cap on a single bulk-open / MAX request. */
+  maxBulkOpen: 25,
 } as const;
 
 // ---------------------------------------------------------------------------

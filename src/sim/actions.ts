@@ -7,6 +7,7 @@
  */
 
 import {
+  EXPANSION,
   PRICE_TIERS,
   UPGRADES,
   type Positioning,
@@ -15,7 +16,9 @@ import {
 } from "../data/index.ts";
 import { createBrand, findBrand, type BrandSpec } from "./brands.ts";
 import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
+import { openExpansionUnits } from "./expansion.ts";
 import { buyoutPriceFromLease } from "./realestate.ts";
+import { Rng } from "./rng.ts";
 import { cloneState, log } from "./util.ts";
 import type { GameState } from "./state.ts";
 
@@ -59,6 +62,27 @@ export function actOpenLocation(input: GameState, payload: OpenLocationPayload):
   state.expansionPlan.locationsOpenedThisYear += 1;
 
   log(state, "expansion", `Opening ${brand.name} in ${site.cityId} (${site.trafficTier}).`);
+  return state;
+}
+
+export interface BulkOpenPayload {
+  brandId: string;
+  count: number;
+  buyLand?: boolean;
+}
+
+/**
+ * Open N locations of one of your own brands at once (presets +3/+5/+10/MAX or
+ * a custom amount). Reuses the proposal builder; honors buy-and-own; respects
+ * the cash reserve; triggers overextension past management capacity.
+ */
+export function actBulkOpen(input: GameState, payload: BulkOpenPayload): GameState {
+  const state = cloneState(input);
+  const rng = Rng.fromState(state.rngState);
+  const count = Math.max(0, Math.min(Math.floor(payload.count), EXPANSION.maxBulkOpen));
+  openExpansionUnits(state, payload.brandId, count, { buyLand: payload.buyLand, rng });
+  // Persist RNG advancement so the game stays deterministic.
+  state.rngState = rng.toState();
   return state;
 }
 
