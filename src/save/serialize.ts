@@ -63,6 +63,8 @@ function backfill(state: GameState): GameState {
   const s = state;
   s.brands ??= [];
   s.locations ??= [];
+  s.activeDisasters ??= [];
+  for (const loc of s.locations) loc.lastRent ??= 0;
   s.bigGroups ??= [];
   s.competitorChains ??= [];
   s.lastAcquisitionRefresh ??= 0;

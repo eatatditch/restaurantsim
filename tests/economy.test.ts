@@ -82,8 +82,10 @@ describe("rent cap (invariant 8.2)", () => {
     expect(loc.status).toBe("open");
     const annualized = loc.lastRevenue * 52;
     if (loc.lease) {
-      // Rent charged should not exceed the cap fraction of annualized sales.
-      expect(loc.lease.weeklyRent * 52).toBeLessThanOrEqual(annualized * OCCUPANCY_RATIO_CAP + 1);
+      // The CHARGED rent (occupancy-capped in P&L) must respect the cap, even
+      // when seasonality lowers a given week's sales. The contractual rent may
+      // exceed a low week's cap; the governor caps what's actually charged.
+      expect(loc.lastRent * 52).toBeLessThanOrEqual(annualized * OCCUPANCY_RATIO_CAP + 1);
     }
   });
 });

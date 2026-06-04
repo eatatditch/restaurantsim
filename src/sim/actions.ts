@@ -50,6 +50,7 @@ import {
   vegas,
   withdrawSavings,
 } from "./life";
+import { resolveComplication } from "./events";
 import { type ExecRole } from "../data/index";
 import { buyoutPriceFromLease } from "./realestate";
 import { Rng } from "./rng";
@@ -306,6 +307,17 @@ export function actAcceptPeOffer(input: GameState, offerId: string): GameState {
   const state = cloneState(input);
   try {
     acceptPeOffer(state, offerId);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+/** Resolve a pending complication by paying its cost. */
+export function actResolveComplication(input: GameState, complicationId: string): GameState {
+  const state = cloneState(input);
+  try {
+    resolveComplication(state, complicationId);
   } catch (e) {
     throw new ActionError((e as Error).message);
   }

@@ -121,6 +121,7 @@ export function acquireBigGroup(state: GameState, offerId: string): { brand: Bra
     needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
+    lastRent: 0,
   };
   state.locations.push(division);
 
@@ -202,6 +203,7 @@ export function acquireCompetitor(state: GameState, offerId: string): { brand: B
       needsRenovation: true,
       lastNet: 0,
       lastRevenue: 0,
+      lastRent: 0,
     };
     units.push(unit);
     state.locations.push(unit);

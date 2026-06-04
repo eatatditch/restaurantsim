@@ -73,6 +73,7 @@ export function createNrLocation(
     needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
+    lastRent: 0,
   };
 }
 
@@ -145,6 +146,7 @@ export function goFullyDigital(state: GameState, brand: Brand): DigitalConversio
     needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
+    lastRent: 0,
   };
 
   state.cash += liquidationProceeds;

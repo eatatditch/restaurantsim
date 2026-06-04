@@ -444,6 +444,97 @@ export const CEO = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Seasons, disasters, events, achievements, goals
+// ---------------------------------------------------------------------------
+
+export interface Season {
+  id: string;
+  name: string;
+  /** Revenue multiplier across the company while in season. */
+  revMult: number;
+}
+
+/** Four 13-week seasons. Coastal demand peaks in summer. */
+export const SEASONS: readonly Season[] = [
+  { id: "winter", name: "Winter", revMult: 0.9 },
+  { id: "spring", name: "Spring", revMult: 1.0 },
+  { id: "summer", name: "Summer", revMult: 1.18 },
+  { id: "fall", name: "Fall", revMult: 1.04 },
+];
+
+export interface DisasterDef {
+  id: string;
+  name: string;
+  /** Revenue multiplier while active. */
+  revMult: number;
+  /** Weeks the disaster lingers. */
+  weeks: number;
+  /** One-off cleanup cost. */
+  cost: number;
+}
+
+export const DISASTERS: readonly DisasterDef[] = [
+  { id: "storm", name: "Coastal Storm", revMult: 0.8, weeks: 3, cost: 120_000 },
+  { id: "outage", name: "Power Outage", revMult: 0.85, weeks: 1, cost: 40_000 },
+  { id: "recall", name: "Supplier Recall", revMult: 0.88, weeks: 4, cost: 90_000 },
+  { id: "heatwave", name: "Heat Wave", revMult: 0.92, weeks: 2, cost: 25_000 },
+];
+
+/** Per-week probability that a disaster strikes. */
+export const DISASTER_WEEKLY_CHANCE = 0.03;
+
+export interface ComplicationDef {
+  id: string;
+  name: string;
+  message: string;
+  /** Weeks until it must be resolved. */
+  deadlineWeeks: number;
+  /** Cost to resolve now. */
+  resolveCost: number;
+  /** Reputation hit if it lapses unresolved. */
+  lapsePenalty: number;
+}
+
+export const COMPLICATIONS: readonly ComplicationDef[] = [
+  { id: "healthinspection", name: "Health Inspection", message: "A unit failed a surprise inspection.", deadlineWeeks: 4, resolveCost: 60_000, lapsePenalty: 6 },
+  { id: "lawsuit", name: "Slip-and-Fall Suit", message: "A liability claim needs settling.", deadlineWeeks: 6, resolveCost: 150_000, lapsePenalty: 8 },
+  { id: "laborgrievance", name: "Labor Grievance", message: "Staff filed a grievance.", deadlineWeeks: 5, resolveCost: 80_000, lapsePenalty: 5 },
+];
+
+export const COMPLICATION_WEEKLY_CHANCE = 0.04;
+
+export interface AchievementDef {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export const ACHIEVEMENTS: readonly AchievementDef[] = [
+  { id: "first_location", name: "Grand Opening", description: "Open your first location." },
+  { id: "ten_locations", name: "Chain Reaction", description: "Operate 10 locations." },
+  { id: "fifty_locations", name: "Empire", description: "Operate 50 locations." },
+  { id: "millionaire", name: "Millionaire", description: "Reach $1M company cash." },
+  { id: "multibrand", name: "Portfolio", description: "Run 3 brands at once." },
+  { id: "tycoon", name: "Tycoon", description: "Reach $100M personal net worth." },
+  { id: "acquirer", name: "Acquirer", description: "Acquire a chain or big group." },
+  { id: "digital", name: "Going Global", description: "Take a brand fully digital." },
+];
+
+export interface GoalDef {
+  id: string;
+  name: string;
+  metric: "locations" | "brands" | "cash" | "reputation";
+  target: number;
+}
+
+export const GOALS: readonly GoalDef[] = [
+  { id: "g_locations_5", name: "Open 5 locations", metric: "locations", target: 5 },
+  { id: "g_brands_3", name: "Run 3 brands", metric: "brands", target: 3 },
+  { id: "g_cash_10m", name: "Bank $10M", metric: "cash", target: 10_000_000 },
+  { id: "g_rep_80", name: "Reach 80 reputation", metric: "reputation", target: 80 },
+];
+
+// ---------------------------------------------------------------------------
 // Life simulator (personal, parallel to the business)
 // ---------------------------------------------------------------------------
 

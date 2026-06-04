@@ -33,6 +33,7 @@ import {
 } from "./realestate";
 import { tickAcquisitions } from "./acquisitions";
 import { happinessMult, tickPersonal } from "./life";
+import { seasonForWeek, tickEvents } from "./events";
 import { findBrand } from "./brands";
 import {
   calculateNonRestaurantPL,
@@ -69,6 +70,7 @@ export function advanceWeek(input: GameState): GameState {
     if (loc.status !== "open") {
       loc.lastNet = 0;
       loc.lastRevenue = 0;
+      loc.lastRent = 0;
       continue;
     }
     const brand = findBrand(state, loc.brandId);
@@ -81,6 +83,7 @@ export function advanceWeek(input: GameState): GameState {
         : calculateNonRestaurantPL(loc, state.week, mods, rng);
     loc.lastNet = pl.net;
     loc.lastRevenue = pl.revenue;
+    loc.lastRent = pl.rent;
     weeklyNet += pl.net;
   }
 
@@ -109,6 +112,7 @@ export function advanceWeek(input: GameState): GameState {
   tickAcquisitions(state, rng);
   tickBuffs(state);
   maybeScheduleMeeting(state, rng);
+  tickEvents(state, rng);
 
   // 8. CEO autonomy tick (quarterly builds, lifecycle, sit-downs, PE offers).
   tickCeo(state, rng);
@@ -139,6 +143,9 @@ function modifiersFor(state: GameState): PLModifiers {
   mods.execRevenueMult = companyRevenueMult(state);
   // The owner's happiness feeds restaurant customer counts (life<->business).
   mods.happinessMult = happinessMult(state);
+  // Seasonality and any active disasters.
+  mods.seasonMult = seasonForWeek(state.week).revMult;
+  for (const d of state.activeDisasters) mods.disasterMult *= d.revMult;
   // Overextension drags revenue while the strain window is open.
   if (state.expansionPlan.overextensionWeeks > 0) {
     mods.overextensionMult = EXPANSION.overextensionRevenueDrag > 0

@@ -126,6 +126,7 @@ export function createLocation(
     needsRenovation: false,
     lastNet: 0,
     lastRevenue: 0,
+    lastRent: 0,
   };
 }
 

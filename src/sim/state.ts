@@ -74,9 +74,11 @@ export interface Location {
   ceoAdjustNet: number;
   /** Acquired competitor units start needing renovation before they perform. */
   needsRenovation: boolean;
-  /** Last computed weekly net for display/regression. */
+  /** Last computed weekly figures for display/regression. */
   lastNet: number;
   lastRevenue: number;
+  /** Actual rent charged last week (occupancy-capped), for display + tests. */
+  lastRent: number;
 }
 
 /** A purchasable mega-chain in the acquisitions market. */
@@ -163,6 +165,22 @@ export interface LogEntry {
   message: string;
 }
 
+/** An active complication with a deadline the player must resolve. */
+export interface Complication {
+  id: string;
+  defId: string;
+  message: string;
+  deadlineWeek: number;
+}
+
+/** An active disaster dragging revenue for a few weeks. */
+export interface ActiveDisaster {
+  defId: string;
+  name: string;
+  revMult: number;
+  weeksLeft: number;
+}
+
 export interface GameState {
   version: number;
   seed: number;
@@ -195,9 +213,11 @@ export interface GameState {
 
   personal: PersonalState;
 
-  complications: unknown[];
+  complications: Complication[];
+  activeDisasters: ActiveDisaster[];
   achievements: string[];
-  goals: unknown[];
+  /** Completed goal ids. */
+  goals: string[];
   log: LogEntry[];
 
   /** Monotonic id counter so generated ids stay deterministic. */
@@ -274,6 +294,7 @@ export function newGame(opts: NewGameOptions = {}): GameState {
     },
 
     complications: [],
+    activeDisasters: [],
     achievements: [],
     goals: [],
     log: [],
