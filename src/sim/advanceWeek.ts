@@ -24,6 +24,7 @@ import {
 } from "./realestate.ts";
 import { findBrand } from "./brands.ts";
 import {
+  calculateNonRestaurantPL,
   calculateRestaurantPL,
   neutralModifiers,
   rampMaturity,
@@ -63,8 +64,10 @@ export function advanceWeek(input: GameState): GameState {
     const city = CITY_MARKETS.find((c) => c.id === loc.cityId);
     const mods = modifiersFor(state);
 
-    // Restaurant branch (non-restaurant verticals arrive in Phase 5).
-    const pl = calculateRestaurantPL(loc, brand, city?.demandMult ?? 1, state.week, mods, rng);
+    const pl =
+      loc.vertical === "restaurant"
+        ? calculateRestaurantPL(loc, brand, city?.demandMult ?? 1, state.week, mods, rng)
+        : calculateNonRestaurantPL(loc, state.week, mods, rng);
     loc.lastNet = pl.net;
     loc.lastRevenue = pl.revenue;
     weeklyNet += pl.net;

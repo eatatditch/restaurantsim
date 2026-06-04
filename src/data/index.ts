@@ -281,6 +281,57 @@ export const COMPANY = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Non-restaurant verticals
+// ---------------------------------------------------------------------------
+
+/**
+ * Non-restaurant units don't run the customer/staff sim; they run on a
+ * baseWeeklyRevenue times their margin band. These defaults size a freshly
+ * opened unit per vertical (before city/scale multipliers).
+ */
+export interface NrVerticalDef {
+  vertical: Vertical;
+  name: string;
+  baseWeeklyRevenue: number;
+  buildCost: number;
+  buildWeeks: number;
+}
+
+export const NR_VERTICALS: Record<Exclude<Vertical, "restaurant">, NrVerticalDef> = {
+  apparel: { vertical: "apparel", name: "Apparel", baseWeeklyRevenue: 55_000, buildCost: 260_000, buildWeeks: 8 },
+  cpg: { vertical: "cpg", name: "Packaged Goods", baseWeeklyRevenue: 70_000, buildCost: 340_000, buildWeeks: 10 },
+  realestate: { vertical: "realestate", name: "Real Estate", baseWeeklyRevenue: 40_000, buildCost: 900_000, buildWeeks: 14 },
+  venue: { vertical: "venue", name: "Venue", baseWeeklyRevenue: 48_000, buildCost: 420_000, buildWeeks: 12 },
+  resort: { vertical: "resort", name: "Resort", baseWeeklyRevenue: 95_000, buildCost: 1_400_000, buildWeeks: 20 },
+  group: { vertical: "group", name: "Operating Chain", baseWeeklyRevenue: 0, buildCost: 0, buildWeeks: 0 },
+};
+
+/** nrUpgrades effects: sourcing lifts the margin band; brand lifts revenue. */
+export const NR_UPGRADE = {
+  maxLevel: 5,
+  sourcingBaseCost: 90_000,
+  brandBaseCost: 120_000,
+  costGrowth: 1.6,
+  /** Margin-band lift per sourcing level (added to the band). */
+  sourcingMarginBoost: [0, 0.02, 0.04, 0.06, 0.08, 0.1],
+  /** Revenue multiplier per brand-investment level. */
+  brandRevenue: [1.0, 1.08, 1.17, 1.27, 1.38, 1.5],
+} as const;
+
+// ---------------------------------------------------------------------------
+// Digital DTC conversion (Go Fully Digital — apparel)
+// ---------------------------------------------------------------------------
+
+export const DIGITAL = {
+  /** Physical stores liquidate for this fraction of their build cost. */
+  liquidationFraction: 0.55,
+  /** The relaunched online unit's starting weekly revenue multiplier. */
+  launchRevenueMult: 1.25,
+  /** Online unit starts low and ramps to the digital ceiling over ~2 years. */
+  startMaturity: 0.6,
+} as const;
+
+// ---------------------------------------------------------------------------
 // Facilities Manager (executes the buy-and-own mandate)
 // ---------------------------------------------------------------------------
 

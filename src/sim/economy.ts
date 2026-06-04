@@ -15,6 +15,7 @@ import {
   MARKET_MATURITY,
   OCCUPANCY_RATIO_CAP,
   PRICE_TIERS,
+  NR_UPGRADE,
   RESTAURANT_BASE_COGS,
   RESTAURANT_CONCEPTS,
   STAFF_TYPES,
@@ -239,6 +240,56 @@ export function calculateRestaurantPL(
     net,
     netMargin: governedMargin,
     rentCapped,
+  };
+}
+
+/**
+ * Compute one week of P&L for a non-restaurant unit. These run on
+ * baseWeeklyRevenue times maturity and the brand investment, with the margin
+ * governor (band lifted by sourcing) deciding net. No customer/staff sim.
+ */
+export function calculateNonRestaurantPL(
+  loc: Location,
+  weekNow: number,
+  mods: PLModifiers,
+  rng: Rng,
+): PLResult {
+  const brandRevMult = NR_UPGRADE.brandRevenue[loc.nrUpgrades.brand] ?? 1;
+  const variance = rng.range(0.96, 1.04);
+
+  const revenue =
+    loc.baseWeeklyRevenue *
+    Math.max(loc.maturity, 0) *
+    brandRevMult *
+    loc.storeCount *
+    mods.brandMult *
+    mods.execRevenueMult *
+    mods.overextensionMult *
+    mods.seasonMult *
+    mods.disasterMult *
+    variance;
+
+  // Sourcing lifts the margin band; brand investment is already in revenue.
+  const sourcingBoost = NR_UPGRADE.sourcingMarginBoost[loc.nrUpgrades.sourcing] ?? 0;
+  const boost = sourcingBoost + loc.nrMarginBoost + loc.ceoAdjustNet;
+
+  const band = marginBandFor(loc.vertical);
+  const ageWeeks = loc.status === "open" ? weekNow - loc.openedWeek : 0;
+  // Non-restaurant raw margin centers on the band before governing.
+  const rawMargin = band.center + sourcingBoost;
+  const governedMargin = governMargin(rawMargin, band, ageWeeks, boost);
+  const net = revenue * governedMargin;
+
+  return {
+    revenue,
+    customers: 0,
+    avgCheck: 0,
+    cogs: revenue * (1 - governedMargin),
+    labor: 0,
+    rent: loc.lease ? loc.lease.weeklyRent : 0,
+    net,
+    netMargin: governedMargin,
+    rentCapped: false,
   };
 }
 

@@ -8,6 +8,7 @@
 
 import {
   EXPANSION,
+  NR_UPGRADE,
   PRICE_TIERS,
   UPGRADES,
   type Positioning,
@@ -17,6 +18,7 @@ import {
 import { createBrand, findBrand, type BrandSpec } from "./brands.ts";
 import { buildCost, createLocation, landBuyoutPrice, type SiteSpec } from "./locations.ts";
 import { openExpansionUnits } from "./expansion.ts";
+import { createNrLocation, goFullyDigital, nrBuildCost } from "./investments.ts";
 import { buyoutPriceFromLease } from "./realestate.ts";
 import { Rng } from "./rng.ts";
 import { cloneState, log } from "./util.ts";
@@ -117,6 +119,59 @@ export function actBuyUpgrade(input: GameState, locId: string, kind: UpgradeKind
   state.cash -= cost;
   loc.upgrades[kind] = level + 1;
   log(state, "upgrade", `Upgraded ${kind} to level ${level + 1}.`);
+  return state;
+}
+
+/** Open a physical non-restaurant unit for a non-restaurant brand. */
+export function actOpenNonRestaurant(
+  input: GameState,
+  payload: { brandId: string; cityId: string; buyLand?: boolean },
+): GameState {
+  const state = cloneState(input);
+  const brand = findBrand(state, payload.brandId);
+  if (brand.vertical === "restaurant" || brand.vertical === "group") {
+    throw new ActionError("Brand is not a physical non-restaurant vertical");
+  }
+  const cost = nrBuildCost(brand.vertical, payload.cityId);
+  if (state.cash < cost) throw new ActionError(`Insufficient funds: need ${cost}, have ${state.cash}`);
+  state.cash -= cost;
+  const loc = createNrLocation(state, brand, payload.cityId, payload.buyLand ?? false);
+  state.locations.push(loc);
+  state.expansionPlan.locationsOpenedThisYear += 1;
+  log(state, "expansion", `Opening ${brand.name} (${brand.vertical}) in ${payload.cityId}.`);
+  return state;
+}
+
+/** Buy one level of a non-restaurant investment (sourcing or brand). */
+export function actBuyNrUpgrade(
+  input: GameState,
+  locId: string,
+  kind: "sourcing" | "brand",
+): GameState {
+  const state = cloneState(input);
+  const loc = state.locations.find((l) => l.id === locId);
+  if (!loc) throw new ActionError(`Unknown location: ${locId}`);
+  const level = loc.nrUpgrades[kind];
+  if (level >= NR_UPGRADE.maxLevel) throw new ActionError(`${kind} already maxed`);
+  const base = kind === "sourcing" ? NR_UPGRADE.sourcingBaseCost : NR_UPGRADE.brandBaseCost;
+  const cost = Math.round(base * Math.pow(NR_UPGRADE.costGrowth, level));
+  if (state.cash < cost) throw new ActionError(`Insufficient funds for ${kind}: need ${cost}, have ${state.cash}`);
+  state.cash -= cost;
+  loc.nrUpgrades[kind] = level + 1;
+  log(state, "investment", `${kind} investment raised to level ${level + 1}.`);
+  return state;
+}
+
+/** Convert a physical apparel brand into a single global DTC storefront. */
+export function actGoFullyDigital(input: GameState, brandId: string): GameState {
+  const state = cloneState(input);
+  const brand = findBrand(state, brandId);
+  const result = goFullyDigital(state, brand);
+  log(
+    state,
+    "digital",
+    `${brand.name} went fully digital: liquidated stores for ${result.liquidationProceeds}.`,
+  );
   return state;
 }
 
