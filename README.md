@@ -52,18 +52,34 @@ No legacy reference file was available, so all balance constants in
 `src/data/` are **original**, authored from the build spec and meant to be
 tuned. They are centralized so tuning is a data edit, not a code hunt.
 
-## Build plan
+## How to play
 
-Built in 10 phases; the test suite stays green after each.
+Press **SPACE** (or ▶ WEEK) to advance one week. Launch a brand, open
+locations, and grow — but only as fast as your management capacity allows.
+Hire a C-suite, acquire chains, run your personal life in parallel. **Escape**
+closes modals. Saves persist to `localStorage` and sync to Supabase when
+signed in (Settings → Cloud Saves).
 
-1. **Scaffold + foundations** ✅ — Vite/TS/Vitest, seedable RNG, `GameState` +
-   `newGame()`, save/serialize/migrate with Supabase seam, determinism tests.
-2. Restaurant core (P&L, margin governor, market maturity, reputation)
-3. Real estate (leases vs owned, Facilities Manager)
-4. Expansion (single + bulk open, overextension)
-5. Brands & verticals (positioning, non-restaurant, digital DTC)
-6. Acquisitions (big groups + competitor chains)
-7. Executives (C-suite + pro-CEO lifecycle)
-8. Life simulator
-9. Meta + UI polish
-10. Balance pass + ship
+## Build plan — complete ✅
+
+Built in 10 phases; the test suite (79 tests) stays green.
+
+1. **Scaffold + foundations** — Vite/TS/Vitest, seedable RNG, `GameState` +
+   `newGame()`, save/serialize/migrate with Supabase seam.
+2. **Restaurant core** — P&L, margin governor, market maturity, reputation.
+3. **Real estate** — leases vs owned, escalations, Facilities Manager.
+4. **Expansion** — single + bulk open, proposal builder, overextension.
+5. **Brands & verticals** — positioning, non-restaurant verticals, digital DTC.
+6. **Acquisitions** — big groups (aggregate divisions) + competitor chains.
+7. **Executives** — C-suite + meetings, pro-CEO lifecycle + autonomy + PE offers.
+8. **Life simulator** — money, homes/cars/luxuries, family, temptations, the
+   happiness↔business loop.
+9. **Meta + UI** — seasons/disasters/complications, achievements/goals, and the
+   full coastal/arcade UI.
+10. **Balance pass + ship** — scripted two-year regression, deployed on Vercel.
+
+## Economic invariants (locked by tests)
+
+Margin governor caps/floors/centers · rent occupancy cap · no negative-cash
+exploits · overextension strain · market-maturity asymptotes · positioning
+propagation · save round-trips + migration · full determinism.
