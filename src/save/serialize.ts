@@ -108,6 +108,11 @@ function backfill(state: GameState): GameState {
   s.executives.proCeo.weeksInRole ??= 0;
   s.executives.proCeo.goals ??= { newLocationsPerBrand: 0, growChains: 0, newBrands: 0 };
   s.executives.proCeo.pendingSitDown ??= false;
+  // Backfill newer kid sub-fields (venture system) on older saves.
+  for (const kid of s.personal.kids) {
+    kid.venture ??= "none";
+    kid.ventureIncome ??= 0;
+  }
   return s;
 }
 

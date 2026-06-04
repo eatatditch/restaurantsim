@@ -444,6 +444,87 @@ export const CEO = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Life simulator (personal, parallel to the business)
+// ---------------------------------------------------------------------------
+
+export interface LadderItem {
+  id: string;
+  name: string;
+  cost: number;
+  /** Contribution to the happiness ceiling. */
+  happiness: number;
+  /** Weekly upkeep cost. */
+  upkeep: number;
+}
+
+/** Home upgrade ladder. */
+export const HOMES: readonly LadderItem[] = [
+  { id: "apartment", name: "City Apartment", cost: 280_000, happiness: 6, upkeep: 1200 },
+  { id: "condo", name: "Beach Condo", cost: 850_000, happiness: 12, upkeep: 2600 },
+  { id: "house", name: "Coastal House", cost: 2_400_000, happiness: 20, upkeep: 5200 },
+  { id: "estate", name: "Cliffside Estate", cost: 7_500_000, happiness: 32, upkeep: 12_000 },
+  { id: "compound", name: "Private Compound", cost: 22_000_000, happiness: 48, upkeep: 32_000 },
+];
+
+/** Car upgrade ladder. */
+export const CARS: readonly LadderItem[] = [
+  { id: "sedan", name: "Sensible Sedan", cost: 38_000, happiness: 3, upkeep: 180 },
+  { id: "suv", name: "Luxury SUV", cost: 95_000, happiness: 6, upkeep: 360 },
+  { id: "sports", name: "Sports Coupe", cost: 240_000, happiness: 11, upkeep: 820 },
+  { id: "exotic", name: "Exotic Supercar", cost: 850_000, happiness: 18, upkeep: 2400 },
+];
+
+/** Collectible big-ticket assets (ownable in multiples). */
+export interface LuxuryItem {
+  id: string;
+  name: string;
+  cost: number;
+  happiness: number;
+  upkeep: number;
+  /** Resale fraction of cost. */
+  resale: number;
+}
+
+export const LUXURY_CATALOG: readonly LuxuryItem[] = [
+  { id: "island", name: "Private Island", cost: 35_000_000, happiness: 30, upkeep: 60_000, resale: 0.7 },
+  { id: "realestate", name: "Investment Property", cost: 4_000_000, happiness: 8, upkeep: 6000, resale: 0.85 },
+  { id: "supercar", name: "Collector Supercar", cost: 1_800_000, happiness: 10, upkeep: 3000, resale: 0.75 },
+  { id: "yacht", name: "Superyacht", cost: 28_000_000, happiness: 26, upkeep: 90_000, resale: 0.6 },
+  { id: "jet", name: "Private Jet", cost: 45_000_000, happiness: 28, upkeep: 120_000, resale: 0.65 },
+  { id: "helicopter", name: "Helicopter", cost: 6_000_000, happiness: 12, upkeep: 18_000, resale: 0.6 },
+  { id: "art", name: "Art Collection", cost: 9_000_000, happiness: 14, upkeep: 8000, resale: 0.9 },
+  { id: "watch", name: "Watch Collection", cost: 2_200_000, happiness: 9, upkeep: 1500, resale: 0.8 },
+  { id: "wine", name: "Wine Cellar", cost: 1_400_000, happiness: 7, upkeep: 2000, resale: 0.7 },
+];
+
+export const LIFE = {
+  /** Base happiness target before lifestyle contributions. */
+  baseHappiness: 45,
+  /** How fast happiness moves toward its target each week. */
+  happinessLerp: 0.1,
+  /** Savings weekly interest rate. */
+  savingsRate: 0.0008,
+  /** Happiness below this accrues burnout. */
+  burnoutThreshold: 25,
+  /** happinessMult on business: maps happiness 0..100 to this range. */
+  businessHappinessMin: 0.9,
+  businessHappinessMax: 1.12,
+  /** Partner & kid happiness contributions. */
+  partnerHappiness: 10,
+  marriedHappiness: 6,
+  kidHappiness: 5,
+  collegeCost: 320_000,
+  collegeHappiness: 8,
+  ventureCost: 500_000,
+  /** Affair outcomes are heavily weighted toward disaster. */
+  affairCaughtDivorceChance: 0.5,
+  affairCaughtWreckedChance: 0.3,
+  /** Divorce settlement takes this fraction of personal net worth. */
+  divorceSettlement: 0.4,
+  vegasStake: 250_000,
+} as const;
+
+// ---------------------------------------------------------------------------
 // Acquisitions
 // ---------------------------------------------------------------------------
 

@@ -33,6 +33,23 @@ import {
   setCeoGoals,
   setExec,
 } from "./executives";
+import {
+  affair,
+  buyLadder,
+  buyLuxury,
+  depositSavings,
+  exitVenture,
+  fundVenture,
+  haveKid,
+  marry,
+  ownerDraw,
+  sellLuxury,
+  sendToCollege,
+  setSalary,
+  startDating,
+  vegas,
+  withdrawSavings,
+} from "./life";
 import { type ExecRole } from "../data/index";
 import { buyoutPriceFromLease } from "./realestate";
 import { Rng } from "./rng";
@@ -294,6 +311,51 @@ export function actAcceptPeOffer(input: GameState, offerId: string): GameState {
   }
   return state;
 }
+
+// ---------------------------------------------------------------------------
+// Life simulator actions
+// ---------------------------------------------------------------------------
+
+/** Wrap a life mutation that may need the RNG and persist RNG state. */
+function lifeRngAction(input: GameState, fn: (s: GameState, rng: Rng) => void): GameState {
+  const state = cloneState(input);
+  const rng = Rng.fromState(state.rngState);
+  try {
+    fn(state, rng);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  state.rngState = rng.toState();
+  return state;
+}
+
+/** Wrap a deterministic life mutation. */
+function lifeAction(input: GameState, fn: (s: GameState) => void): GameState {
+  const state = cloneState(input);
+  try {
+    fn(state);
+  } catch (e) {
+    throw new ActionError((e as Error).message);
+  }
+  return state;
+}
+
+export const actOwnerDraw = (s: GameState, amount: number) => lifeAction(s, (st) => ownerDraw(st, amount));
+export const actSetSalary = (s: GameState, salary: number) => lifeAction(s, (st) => setSalary(st, salary));
+export const actDeposit = (s: GameState, amount: number) => lifeAction(s, (st) => depositSavings(st, amount));
+export const actWithdraw = (s: GameState, amount: number) => lifeAction(s, (st) => withdrawSavings(st, amount));
+export const actBuyHome = (s: GameState, id: string) => lifeAction(s, (st) => buyLadder(st, "home", id));
+export const actBuyCar = (s: GameState, id: string) => lifeAction(s, (st) => buyLadder(st, "car", id));
+export const actBuyLuxury = (s: GameState, id: string) => lifeAction(s, (st) => buyLuxury(st, id));
+export const actSellLuxury = (s: GameState, id: string) => lifeAction(s, (st) => sellLuxury(st, id));
+export const actStartDating = (s: GameState, name: string) => lifeAction(s, (st) => startDating(st, name));
+export const actMarry = (s: GameState) => lifeAction(s, (st) => marry(st));
+export const actHaveKid = (s: GameState, name: string) => lifeAction(s, (st) => haveKid(st, name));
+export const actSendToCollege = (s: GameState, kidId: string) => lifeAction(s, (st) => sendToCollege(st, kidId));
+export const actFundVenture = (s: GameState, kidId: string) => lifeRngAction(s, (st, rng) => fundVenture(st, kidId, rng));
+export const actExitVenture = (s: GameState, kidId: string) => lifeRngAction(s, (st, rng) => exitVenture(st, kidId, rng));
+export const actAffair = (s: GameState) => lifeRngAction(s, (st, rng) => affair(st, rng));
+export const actVegas = (s: GameState) => lifeRngAction(s, (st, rng) => vegas(st, rng));
 
 /** Toggle the company-wide Buy & Own real estate policy. */
 export function actSetOwnPolicy(input: GameState, on: boolean): GameState {

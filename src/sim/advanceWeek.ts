@@ -32,6 +32,7 @@ import {
   processLeaseExpiries,
 } from "./realestate";
 import { tickAcquisitions } from "./acquisitions";
+import { happinessMult, tickPersonal } from "./life";
 import { findBrand } from "./brands";
 import {
   calculateNonRestaurantPL,
@@ -101,7 +102,8 @@ export function advanceWeek(input: GameState): GameState {
   processLeaseExpiries(state);
   ownershipSweep(state);
 
-  // 6. Personal tick -> Phase 8.
+  // 6. Personal tick (money, upkeep, happiness, burnout).
+  tickPersonal(state);
 
   // 7. Events / complications + acquisitions market + C-suite meetings.
   tickAcquisitions(state, rng);
@@ -135,6 +137,8 @@ function modifiersFor(state: GameState): PLModifiers {
   const mods = neutralModifiers();
   // Executive layer, CEO phase, and active buffs fold into the revenue mult.
   mods.execRevenueMult = companyRevenueMult(state);
+  // The owner's happiness feeds restaurant customer counts (life<->business).
+  mods.happinessMult = happinessMult(state);
   // Overextension drags revenue while the strain window is open.
   if (state.expansionPlan.overextensionWeeks > 0) {
     mods.overextensionMult = EXPANSION.overextensionRevenueDrag > 0

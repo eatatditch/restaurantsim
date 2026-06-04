@@ -104,9 +104,20 @@ export interface PersonalState {
   homeId: string | null;
   carId: string | null;
   partner: { name: string; married: boolean } | null;
-  kids: Array<{ id: string; name: string; stage: string }>;
+  kids: Kid[];
   luxuries: Array<{ catalogId: string; count: number }>;
   burnoutWeeks: number;
+}
+
+export interface Kid {
+  id: string;
+  name: string;
+  /** child -> college -> graduated. */
+  stage: "child" | "college" | "graduated";
+  /** Business venture funded for this kid. */
+  venture: "none" | "running" | "failed" | "exited";
+  /** Weekly income to the player from a running venture. */
+  ventureIncome: number;
 }
 
 export interface ExecutivesState {
